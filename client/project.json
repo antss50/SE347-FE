@@ -17,8 +17,7 @@
       "configurations": {
         "development": {
           "buildTarget": "client:build:development",
-          "dev": true,
-          "turbo": true
+          "dev": true
         },
         "production": {
           "buildTarget": "client:build:production",

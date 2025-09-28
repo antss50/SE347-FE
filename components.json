@@ -1,0 +1,17 @@
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "default",
+  "rsc": false,
+  "tailwind": {
+    "config": "libs\\shacdn-utils\\src\\tailwind.config.ts",
+    "css": "libs\\shacdn-utils\\src\\global.css",
+    "baseColor": "neutral",
+    "cssVariables": true
+  },
+  "aliases": {
+    "ui": "@auction-hub/shacdn-ui",
+    "components": "@auction-hub/shacdn-ui/components",
+    "utils": "@auction-hub/shacdn-utils",
+    "hooks": "@auction-hub/shacdn-ui/hooks"
+  }
+}
