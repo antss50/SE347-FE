@@ -1,0 +1,544 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserType {
+  individual
+  business
+}
+
+enum AssetStatus {
+  draft
+  published
+  in_auction
+  sold
+  cancelled
+}
+
+enum DocumentType {
+  legal
+  technical
+  valuation
+  other
+}
+
+enum AuctionType {
+  ascending
+  descending
+  sealed_bid
+}
+
+enum AuctionSessionStatus {
+  draft
+  scheduled
+  ongoing
+  completed
+  cancelled
+  failed
+}
+
+enum RegistrationStatus {
+  pending
+  approved
+  rejected
+  cancelled
+}
+
+enum AttendanceStatus {
+  not_checked
+  checked_in
+  absent
+}
+
+enum PaymentType {
+  deposit
+  participation_fee
+  winning_payment
+  refund
+}
+
+enum PaymentStatus {
+  pending
+  processing
+  completed
+  failed
+  refunded
+}
+
+enum PaymentMethod {
+  bank_transfer
+  e_wallet
+  cash
+}
+
+enum BidType {
+  manual
+  auto
+}
+
+enum ComplaintType {
+  fraud
+  harassment
+  payment_issue
+  other
+}
+
+enum ComplaintStatus {
+  pending
+  investigating
+  resolved
+  dismissed
+}
+
+enum ReportType {
+  success
+  failure
+  monthly
+  quarterly
+  annual
+}
+
+enum ContractStatus {
+  draft
+  signed
+  completed
+  cancelled
+}
+
+model User {
+  id              String    @id @default(uuid()) @db.Uuid
+  email           String    @unique @db.VarChar(255)
+  passwordHash    String    @map("password_hash") @db.VarChar(255)
+  phoneNumber     String?   @unique @map("phone_number") @db.VarChar(20)
+  fullName        String    @map("full_name") @db.VarChar(255)
+  identityNumber  String?   @unique @map("identity_number") @db.VarChar(20)
+  userType        UserType  @map("user_type")
+  taxId           String?   @map("tax_id") @db.VarChar(50)
+  avatarUrl       String?   @map("avatar_url") @db.VarChar(500)
+  isVerified      Boolean   @default(false) @map("is_verified")
+  isBanned        Boolean   @default(false) @map("is_banned")
+  banReason       String?   @map("ban_reason") @db.Text
+  bannedAt        DateTime? @map("banned_at") @db.Timestamp
+  emailVerifiedAt DateTime? @map("email_verified_at") @db.Timestamp
+  ratingScore     Decimal   @default(5.00) @map("rating_score") @db.Decimal(3, 2)
+  totalRatings    Int       @default(0) @map("total_ratings")
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamp
+  updatedAt       DateTime  @updatedAt @map("updated_at") @db.Timestamp
+  deletedAt       DateTime? @map("deleted_at") @db.Timestamp
+
+  userRoles               UserRole[]
+  createdAssets           Asset[]                  @relation("AssetCreator")
+  uploadedDocuments       AssetDocument[]
+  auctionedSessions       AuctionSession[]         @relation("Auctioneer")
+  createdAuctionSessions  AuctionSession[]         @relation("AuctionCreator")
+  wonAuctionSessions      AuctionSession[]         @relation("AuctionWinner")
+  auctionRegistrations    AuctionRegistration[]    @relation("Registrant")
+  approvedRegistrations   AuctionRegistration[]    @relation("RegistrationApprover")
+  payments                Payment[]
+  bids                    Bid[]
+  autoBidSettings         AutoBidSetting[]
+  notifications           Notification[]
+  notificationPreferences NotificationPreferences?
+  activityLogs            ActivityLog[]
+  givenRatings            UserRating[]             @relation("Rater")
+  receivedRatings         UserRating[]             @relation("RatedUser")
+  filedComplaints         Complaint[]              @relation("Complainant")
+  receivedComplaints      Complaint[]              @relation("Defendant")
+  resolvedComplaints      Complaint[]              @relation("ComplaintResolver")
+  signedReports           AuctionReport[]
+  buyerContracts          Contract[]               @relation("Buyer")
+  sellerContracts         Contract[]               @relation("Seller")
+
+  @@map("users")
+}
+
+model Role {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique @db.VarChar(50)
+  description String?  @db.Text
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamp
+
+  userRoles       UserRole[]
+  rolePermissions RolePermission[]
+
+  @@map("roles")
+}
+
+model UserRole {
+  userId     String   @map("user_id") @db.Uuid
+  roleId     Int      @map("role_id")
+  assignedAt DateTime @default(now()) @map("assigned_at") @db.Timestamp
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+  @@map("user_roles")
+}
+
+model Permission {
+  id          Int     @id @default(autoincrement())
+  name        String  @unique @db.VarChar(100)
+  resource    String? @db.VarChar(50)
+  action      String? @db.VarChar(50)
+  description String? @db.Text
+
+  rolePermissions RolePermission[]
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  roleId       Int @map("role_id")
+  permissionId Int @map("permission_id")
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+model AssetCategory {
+  id        Int      @id @default(autoincrement())
+  name      String   @db.VarChar(100)
+  parentId  Int?     @map("parent_id")
+  slug      String?  @unique @db.VarChar(100)
+  icon      String?  @db.VarChar(255)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp
+
+  parent   AssetCategory?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children AssetCategory[] @relation("CategoryHierarchy")
+  assets   Asset[]
+
+  @@map("asset_categories")
+}
+
+model Asset {
+  id                   String      @id @default(uuid()) @db.Uuid
+  code                 String      @unique @db.VarChar(50)
+  name                 String      @db.VarChar(255)
+  description          String?     @db.Text
+  categoryId           Int?        @map("category_id")
+  startingPrice        Decimal     @map("starting_price") @db.Decimal(20, 2)
+  priceStep            Decimal     @map("price_step") @db.Decimal(20, 2)
+  maxPriceSteps        Int         @default(10) @map("max_price_steps")
+  status               AssetStatus @default(draft)
+  ownerInfo            String?     @map("owner_info") @db.Text
+  legalStatus          String?     @map("legal_status") @db.Text
+  location             String?     @db.VarChar(500)
+  valuationDocumentUrl String?     @map("valuation_document_url") @db.VarChar(500)
+  createdBy            String      @map("created_by") @db.Uuid
+  createdAt            DateTime    @default(now()) @map("created_at") @db.Timestamp
+  updatedAt            DateTime    @updatedAt @map("updated_at") @db.Timestamp
+  deletedAt            DateTime?   @map("deleted_at") @db.Timestamp
+
+  category      AssetCategory?  @relation(fields: [categoryId], references: [id])
+  creator       User            @relation("AssetCreator", fields: [createdBy], references: [id])
+  images        AssetImage[]
+  documents     AssetDocument[]
+  auctionAssets AuctionAsset[]
+
+  @@map("assets")
+}
+
+model AssetImage {
+  id           String   @id @default(uuid()) @db.Uuid
+  assetId      String   @map("asset_id") @db.Uuid
+  imageUrl     String   @map("image_url") @db.VarChar(500)
+  caption      String?  @db.VarChar(255)
+  isPrimary    Boolean  @default(false) @map("is_primary")
+  displayOrder Int      @default(0) @map("display_order")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamp
+
+  asset Asset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@map("asset_images")
+}
+
+model AssetDocument {
+  id           String        @id @default(uuid()) @db.Uuid
+  assetId      String        @map("asset_id") @db.Uuid
+  documentUrl  String        @map("document_url") @db.VarChar(500)
+  documentType DocumentType? @map("document_type")
+  fileName     String?       @map("file_name") @db.VarChar(255)
+  fileSize     BigInt?       @map("file_size")
+  mimeType     String?       @map("mime_type") @db.VarChar(100)
+  uploadedBy   String        @map("uploaded_by") @db.Uuid
+  uploadedAt   DateTime      @default(now()) @map("uploaded_at") @db.Timestamp
+
+  asset    Asset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  uploader User  @relation(fields: [uploadedBy], references: [id])
+
+  @@map("asset_documents")
+}
+
+model AuctionSession {
+  id                   String               @id @default(uuid()) @db.Uuid
+  sessionCode          String               @unique @map("session_code") @db.VarChar(50)
+  title                String               @db.VarChar(255)
+  description          String?              @db.Text
+  auctionType          AuctionType          @default(ascending) @map("auction_type")
+  startTime            DateTime             @map("start_time") @db.Timestamp
+  endTime              DateTime             @map("end_time") @db.Timestamp
+  registrationDeadline DateTime             @map("registration_deadline") @db.Timestamp
+  depositAmount        Decimal              @map("deposit_amount") @db.Decimal(20, 2)
+  participationFee     Decimal?             @map("participation_fee") @db.Decimal(20, 2)
+  minParticipants      Int                  @default(2) @map("min_participants")
+  maxParticipants      Int?                 @map("max_participants")
+  status               AuctionSessionStatus @default(draft)
+  auctioneerId         String?              @map("auctioneer_id") @db.Uuid
+  createdBy            String               @map("created_by") @db.Uuid
+  winnerId             String?              @map("winner_id") @db.Uuid
+  winningBid           Decimal?             @map("winning_bid") @db.Decimal(20, 2)
+  completedAt          DateTime?            @map("completed_at") @db.Timestamp
+  cancellationReason   String?              @map("cancellation_reason") @db.Text
+  createdAt            DateTime             @default(now()) @map("created_at") @db.Timestamp
+  updatedAt            DateTime             @updatedAt @map("updated_at") @db.Timestamp
+
+  auctioneer      User?                 @relation("Auctioneer", fields: [auctioneerId], references: [id])
+  creator         User                  @relation("AuctionCreator", fields: [createdBy], references: [id])
+  winner          User?                 @relation("AuctionWinner", fields: [winnerId], references: [id])
+  auctionAssets   AuctionAsset[]
+  registrations   AuctionRegistration[]
+  payments        Payment[]
+  bids            Bid[]
+  autoBidSettings AutoBidSetting[]
+  userRatings     UserRating[]
+  complaints      Complaint[]
+  auctionReports  AuctionReport[]
+  contracts       Contract[]
+
+  @@map("auction_sessions")
+}
+
+model AuctionAsset {
+  auctionId    String @map("auction_id") @db.Uuid
+  assetId      String @map("asset_id") @db.Uuid
+  displayOrder Int    @default(0) @map("display_order")
+
+  auction AuctionSession @relation(fields: [auctionId], references: [id], onDelete: Cascade)
+  asset   Asset          @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@id([auctionId, assetId])
+  @@map("auction_assets")
+}
+
+model AuctionRegistration {
+  id               String             @id @default(uuid()) @db.Uuid
+  auctionId        String             @map("auction_id") @db.Uuid
+  userId           String             @map("user_id") @db.Uuid
+  status           RegistrationStatus @default(pending)
+  registrationTime DateTime           @default(now()) @map("registration_time") @db.Timestamp
+  approvalTime     DateTime?          @map("approval_time") @db.Timestamp
+  approvedBy       String?            @map("approved_by") @db.Uuid
+  rejectionReason  String?            @map("rejection_reason") @db.Text
+  attendanceStatus AttendanceStatus   @default(not_checked) @map("attendance_status")
+  checkedInAt      DateTime?          @map("checked_in_at") @db.Timestamp
+
+  auction  AuctionSession @relation(fields: [auctionId], references: [id], onDelete: Cascade)
+  user     User           @relation("Registrant", fields: [userId], references: [id])
+  approver User?          @relation("RegistrationApprover", fields: [approvedBy], references: [id])
+  payments Payment[]
+
+  @@map("auction_registrations")
+}
+
+model Payment {
+  id             String         @id @default(uuid()) @db.Uuid
+  userId         String         @map("user_id") @db.Uuid
+  auctionId      String?        @map("auction_id") @db.Uuid
+  registrationId String?        @map("registration_id") @db.Uuid
+  paymentType    PaymentType    @map("payment_type")
+  amount         Decimal        @db.Decimal(20, 2)
+  currency       String         @default("VND") @db.VarChar(3)
+  status         PaymentStatus  @default(pending)
+  paymentMethod  PaymentMethod? @map("payment_method")
+  transactionId  String?        @map("transaction_id") @db.VarChar(100)
+  bankCode       String?        @map("bank_code") @db.VarChar(50)
+  paymentDetails Json?          @map("payment_details")
+  paidAt         DateTime?      @map("paid_at") @db.Timestamp
+  refundedAt     DateTime?      @map("refunded_at") @db.Timestamp
+  refundReason   String?        @map("refund_reason") @db.Text
+  createdAt      DateTime       @default(now()) @map("created_at") @db.Timestamp
+  updatedAt      DateTime       @updatedAt @map("updated_at") @db.Timestamp
+
+  user         User                 @relation(fields: [userId], references: [id])
+  auction      AuctionSession?      @relation(fields: [auctionId], references: [id])
+  registration AuctionRegistration? @relation(fields: [registrationId], references: [id])
+
+  @@map("payments")
+}
+
+model Bid {
+  id               String    @id @default(uuid()) @db.Uuid
+  auctionId        String    @map("auction_id") @db.Uuid
+  userId           String    @map("user_id") @db.Uuid
+  bidAmount        Decimal   @map("bid_amount") @db.Decimal(20, 2)
+  bidType          BidType   @default(manual) @map("bid_type")
+  isWinningBid     Boolean   @default(false) @map("is_winning_bid")
+  isWithdrawn      Boolean   @default(false) @map("is_withdrawn")
+  withdrawnAt      DateTime? @map("withdrawn_at") @db.Timestamp
+  withdrawalReason String?   @map("withdrawal_reason") @db.Text
+  ipAddress        String?   @map("ip_address") @db.VarChar(45)
+  userAgent        String?   @map("user_agent") @db.Text
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamp
+
+  auction AuctionSession @relation(fields: [auctionId], references: [id], onDelete: Cascade)
+  user    User           @relation(fields: [userId], references: [id])
+
+  @@map("bids")
+}
+
+model AutoBidSetting {
+  id              String   @id @default(uuid()) @db.Uuid
+  auctionId       String   @map("auction_id") @db.Uuid
+  userId          String   @map("user_id") @db.Uuid
+  maxAmount       Decimal  @map("max_amount") @db.Decimal(20, 2)
+  incrementAmount Decimal  @map("increment_amount") @db.Decimal(20, 2)
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamp
+  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamp
+
+  auction AuctionSession @relation(fields: [auctionId], references: [id], onDelete: Cascade)
+  user    User           @relation(fields: [userId], references: [id])
+
+  @@map("auto_bid_settings")
+}
+
+model Notification {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  type      String    @db.VarChar(50)
+  title     String    @db.VarChar(255)
+  message   String?   @db.Text
+  data      Json?
+  isRead    Boolean   @default(false) @map("is_read")
+  readAt    DateTime? @map("read_at") @db.Timestamp
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamp
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+model NotificationPreferences {
+  userId               String  @id @map("user_id") @db.Uuid
+  emailEnabled         Boolean @default(true) @map("email_enabled")
+  smsEnabled           Boolean @default(true) @map("sms_enabled")
+  pushEnabled          Boolean @default(true) @map("push_enabled")
+  newAssetNotification Boolean @default(true) @map("new_asset_notification")
+  auctionReminder      Boolean @default(true) @map("auction_reminder")
+  bidUpdates           Boolean @default(true) @map("bid_updates")
+  resultNotification   Boolean @default(true) @map("result_notification")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notification_preferences")
+}
+
+model ActivityLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String?  @map("user_id") @db.Uuid
+  action     String   @db.VarChar(100)
+  entityType String?  @map("entity_type") @db.VarChar(50)
+  entityId   String?  @map("entity_id") @db.VarChar(100)
+  oldValues  Json?    @map("old_values")
+  newValues  Json?    @map("new_values")
+  ipAddress  String?  @map("ip_address") @db.VarChar(45)
+  userAgent  String?  @map("user_agent") @db.Text
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamp
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@map("activity_logs")
+}
+
+model UserRating {
+  id          String   @id @default(uuid()) @db.Uuid
+  auctionId   String   @map("auction_id") @db.Uuid
+  raterId     String   @map("rater_id") @db.Uuid
+  ratedUserId String   @map("rated_user_id") @db.Uuid
+  rating      Int
+  comment     String?  @db.Text
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamp
+
+  auction   AuctionSession @relation(fields: [auctionId], references: [id], onDelete: Cascade)
+  rater     User           @relation("Rater", fields: [raterId], references: [id])
+  ratedUser User           @relation("RatedUser", fields: [ratedUserId], references: [id])
+
+  @@map("user_ratings")
+}
+
+model Complaint {
+  id            String          @id @default(uuid()) @db.Uuid
+  complainantId String          @map("complainant_id") @db.Uuid
+  defendantId   String?         @map("defendant_id") @db.Uuid
+  auctionId     String?         @map("auction_id") @db.Uuid
+  complaintType ComplaintType   @map("complaint_type")
+  description   String          @db.Text
+  evidenceUrls  Json?           @map("evidence_urls")
+  status        ComplaintStatus @default(pending)
+  resolution    String?         @db.Text
+  resolvedBy    String?         @map("resolved_by") @db.Uuid
+  resolvedAt    DateTime?       @map("resolved_at") @db.Timestamp
+  createdAt     DateTime        @default(now()) @map("created_at") @db.Timestamp
+  updatedAt     DateTime        @updatedAt @map("updated_at") @db.Timestamp
+
+  complainant User            @relation("Complainant", fields: [complainantId], references: [id])
+  defendant   User?           @relation("Defendant", fields: [defendantId], references: [id])
+  auction     AuctionSession? @relation(fields: [auctionId], references: [id])
+  resolver    User?           @relation("ComplaintResolver", fields: [resolvedBy], references: [id])
+
+  @@map("complaints")
+}
+
+model AuctionReport {
+  id               String     @id @default(uuid()) @db.Uuid
+  auctionId        String     @map("auction_id") @db.Uuid
+  reportType       ReportType @map("report_type")
+  reportData       Json?      @map("report_data")
+  fileUrl          String?    @map("file_url") @db.VarChar(500)
+  digitalSignature String?    @map("digital_signature") @db.Text
+  signedBy         String?    @map("signed_by") @db.Uuid
+  signedAt         DateTime?  @map("signed_at") @db.Timestamp
+  createdAt        DateTime   @default(now()) @map("created_at") @db.Timestamp
+
+  auction AuctionSession @relation(fields: [auctionId], references: [id], onDelete: Cascade)
+  signer  User?          @relation(fields: [signedBy], references: [id])
+
+  @@map("auction_reports")
+}
+
+model Contract {
+  id             String         @id @default(uuid()) @db.Uuid
+  auctionId      String         @map("auction_id") @db.Uuid
+  buyerId        String         @map("buyer_id") @db.Uuid
+  sellerId       String?        @map("seller_id") @db.Uuid
+  contractNumber String?        @unique @map("contract_number") @db.VarChar(100)
+  contractDate   DateTime?      @map("contract_date") @db.Date
+  totalAmount    Decimal?       @map("total_amount") @db.Decimal(20, 2)
+  status         ContractStatus @default(draft)
+  fileUrl        String?        @map("file_url") @db.VarChar(500)
+  signedAt       DateTime?      @map("signed_at") @db.Timestamp
+  createdAt      DateTime       @default(now()) @map("created_at") @db.Timestamp
+  updatedAt      DateTime       @updatedAt @map("updated_at") @db.Timestamp
+
+  auction AuctionSession @relation(fields: [auctionId], references: [id], onDelete: Cascade)
+  buyer   User           @relation("Buyer", fields: [buyerId], references: [id])
+  seller  User?          @relation("Seller", fields: [sellerId], references: [id])
+
+  @@map("contracts")
+}
