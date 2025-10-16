@@ -1,0 +1,148 @@
+{
+    "ongoing": [
+        {
+            "id": "1",
+            "name": "Xe ô tô Toyota Camry 2020",
+            "startingPrice": 500000000,
+            "deposit": 50000000,
+            "time": "2025-09-29",
+            "image": "/images/toyota-camry.jpg",
+            "location": "hcm",
+            "category": "vehicle"
+        },
+        {
+            "id": "2",
+            "name": "Căn hộ chung cư Quận 7",
+            "startingPrice": 2000000000,
+            "deposit": 200000000,
+            "time": "2025-09-30",
+            "image": "/images/can-ho-q7.jpg",
+            "location": "hanoi",
+            "category": "land and house"
+        },
+        {
+            "id": "3",
+            "name": "Bộ sưu tập tranh Đông Hồ cổ",
+            "startingPrice": 150000000,
+            "deposit": 20000000,
+            "time": "2025-09-29",
+            "image": "/images/bo-suu-tap-tranh-Dong-Ho.jpg",
+            "location": "danang",
+            "category": "collectible"
+        },
+        {
+            "id": "4",
+            "name": "Điện thoại iPhone 15 Pro Max",
+            "startingPrice": 35000000,
+            "deposit": 5000000,
+            "time": "2025-09-29",
+            "image": "/images/auction-background.jpg",
+            "location": "hcm",
+            "category": "technology equipment"
+        },
+        {
+            "id": "5",
+            "name": "Xe tải Hyundai 5 tấn",
+            "startingPrice": 800000000,
+            "deposit": 100000000,
+            "time": "2025-09-30",
+            "image": "/images/xe-hyundai-5-tan.jpg",
+            "location": "hanoi",
+            "category": "vehicle"
+        }
+    ],
+    "upcoming": [
+        {
+            "id": "6",
+            "name": "Lô đất 200m² tại Bình Dương",
+            "startingPrice": 1200000000,
+            "deposit": 120000000,
+            "time": "2025-10-05",
+            "image": "/images/lo-dat-200m2.jpg",
+            "location": "danang",
+            "category": "land and house"
+        },
+        {
+            "id": "7",
+            "name": "Xe máy Honda SH 150i",
+            "startingPrice": 80000000,
+            "deposit": 8000000,
+            "time": "2025-10-06",
+            "image": "/images/auction-background.jpg",
+            "location": "hcm",
+            "category": "vehicle"
+        },
+        {
+            "id": "8",
+            "name": "Căn hộ Duplex tại Quận 2",
+            "startingPrice": 3500000000,
+            "deposit": 350000000,
+            "time": "2025-10-07",
+            "image": "/images/can-ho-duplex-quan-2.jpg",
+            "location": "hanoi",
+            "category": "land and house"
+        },
+        {
+            "id": "9",
+            "name": "Xe Mercedes-Benz C300 AMG",
+            "startingPrice": 2400000000,
+            "deposit": 300000000,
+            "time": "2025-10-08",
+            "image": "/images/c300-amg.jpg",
+            "location": "danang",
+            "category": "vehicle"
+        },
+        {
+            "id": "10",
+            "name": "Bộ nội thất gỗ sưa quý hiếm",
+            "startingPrice": 700000000,
+            "deposit": 100000000,
+            "time": "2025-10-09",
+            "image": "/images/auction-background.jpg",
+            "location": "hcm",
+            "category": "collectible"
+        }
+    ],
+    "past": [
+        {
+            "id": "11",
+            "name": "Laptop MacBook Pro 2021",
+            "startingPrice": 30000000,
+            "deposit": 3000000,
+            "time": "2025-09-20",
+            "image": "/images/auction-background.jpg",
+            "location": "hanoi",
+            "category": "technology equipment"
+        },
+        {
+            "id": "12",
+            "name": "Xe ô tô Kia Morning 2018",
+            "startingPrice": 200000000,
+            "deposit": 20000000,
+            "time": "2025-09-18",
+            "image": "/images/auction-background.jpg",
+            "location": "danang",
+            "category": "vehicle"
+        },
+        {
+            "id": "13",
+            "name": "Bộ sưu tập tem Việt Nam cổ",
+            "startingPrice": 5000000,
+            "deposit": 500000,
+            "time": "2025-09-15",
+            "image": "/images/auction-background.jpg",
+            "location": "hcm",
+            "category": "collectible"
+        },
+        {
+            "id": "14",
+            "name": "Đồng hồ Rolex Datejust",
+            "startingPrice": 250000000,
+            "deposit": 30000000,
+            "time": "2025-09-05",
+            "image": "/images/auction-background.jpg",
+            "location": "hanoi",
+            "category": "technology equipment"
+        }
+    ]
+}
