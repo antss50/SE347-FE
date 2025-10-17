@@ -18,6 +18,7 @@ export default function Navbar() {
         <li><Link href="/ongoing-auctions" className="hover:text-yellow-600">Tài sản đấu giá</Link></li>
         <li><Link href="/guide" className="hover:text-yellow-600">Hướng dẫn</Link></li>
         <li><Link href="/announcements" className="hover:text-yellow-600">Thông báo đấu giá</Link></li>
+        <li><Link href="/contacts" className="hover:text-yellow-600">Liên hệ</Link></li>
       </ul>
 
       {/* Auth + Time */}
@@ -30,6 +31,6 @@ export default function Navbar() {
           Đăng ký
         </Button>
       </div>
-    </nav>
+    </nav >
   );
 }

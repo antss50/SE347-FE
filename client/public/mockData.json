@@ -144,5 +144,41 @@
             "location": "hanoi",
             "category": "technology equipment"
         }
-    ]
+    ],
+    "contactPage": {
+    "banner": {
+      "title": "Liên hệ với chúng tôi",
+      "subtitle": "Chúng tôi luôn sẵn sàng hỗ trợ và giải đáp mọi thắc mắc của quý khách về dịch vụ đấu giá tài sản",
+      "imageUrl": "/images/AuctionRooms.jpg"
+    },
+    "offices": [
+      {
+        "title": "Trụ sở chính",
+        "address": "Ô số 6, Tầng 1, Tòa nhà Sunrise IIA, N02A, KĐT Sài Đồng, phường Phúc Lợi, TP Hà Nội"
+      },
+      {
+        "title": "Chi nhánh TP Hồ Chí Minh",
+        "address": "Số 108 Hoa Cúc, phường Cầu Kiệu, TP Hồ Chí Minh"
+      },
+      {
+        "title": "VPDD tại Đà Nẵng",
+        "address": "Số 81 Nhơn Hòa 1, phường An Khê, thành phố Đà Nẵng"
+      },
+      {
+        "title": "VPDD tại Hòa Bình",
+        "address": "Số nhà A1-7, CC Sông Đà 7, phường Hòa Bình, Tỉnh Phú Thọ"
+      }
+    ],
+    "phone": "024 3984 2728",
+    "hotline": "0976 448 446",
+    "email": "info@daugiavietnam.vn",
+    "website": "https://online.daugiavietnam.vn",
+    "workingHours": {
+      "weekdays": "Thứ Hai - Thứ Sáu: 08:00 - 12:00 / 13:30 - 17:30",
+      "saturday": "Thứ Bảy: 08:00 - 12:00",
+      "sunday": "Chủ Nhật và ngày lễ: Nghỉ"
+    },
+    "support24h": "0976 448 446",
+    "mapEmbedUrl": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3724.6532809120374!2d105.79953467506457!3d21.006848788689728!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135ac9a2e4f71d7%3A0xefff84b17d2b5c1f!2zVMO0YSBuaMOgIExpY29naSAxMyAtIDE2NCBLaMOqdXQgRHV5IFRpw6puLCBUaGFuaCBYdcOqbiwgSMOgIE7hu5lp!5e0!3m2!1svi!2s!4v1708967890123!5m2!1svi!2s"
+    }
 }
