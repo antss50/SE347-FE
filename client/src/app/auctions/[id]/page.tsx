@@ -40,7 +40,7 @@ export default function AuctionDetailPage() {
         setAuction({
             id: id as string,
             title:
-                "Quyền khai thác Căn tin Hội quán (Nhà, công trình xây dựng) (A1) (645m2) của Trung tâm Cung ứng dịch vụ Văn hóa - Thể thao xã Hóc Môn",
+                "Khu đất có ký hiệu A1 thuộc dự án Khu tái định cư cuối tuyến Bạch Đằng Đông, phường Sơn Trà, thành phố Đà Nẵng",
             code: "VNA0000249",
             image: "/images/khudatA1.jpg",
             startingPrice: 420000000,
