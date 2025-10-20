@@ -9,6 +9,7 @@ import TimeBox from "client/src/components/TimeBox";
 import Topbar from "client/src/components/Topbar";
 import Navbar from "client/src/components/Navbar";
 import Footer from "client/src/components/Footer";
+import AuctionTabs from "client/src/components/AuctionTabs";
 
 type AuctionDetail = {
     id: string;
@@ -181,58 +182,7 @@ export default function AuctionDetailPage() {
                 </div>
 
                 {/* Tabs */}
-                <div className="mt-10 border-t">
-                    {/* Tabs header */}
-                    <div className="flex space-x-8 text-sm font-medium mt-4 border-b">
-                        {[
-                            { id: "details", label: "Thông tin chi tiết" },
-                            { id: "file", label: "Hồ sơ mời đấu giá" },
-                            { id: "invalid", label: "Danh sách khách hàng không đủ điều kiện" },
-                            { id: "org", label: "Đơn vị tổ chức" },
-                        ].map((tab) => (
-                            <button
-                                key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
-                                className={`py-2 transition-colors ${activeTab === tab.id
-                                    ? "border-b-2 border-red-600 text-red-600"
-                                    : "text-gray-500 hover:text-red-600"
-                                    }`}
-                            >
-                                {tab.label}
-                            </button>
-                        ))}
-                    </div>
-
-                    {/* Nội dung tab */}
-                    <div className="p-6 text-gray-800 leading-relaxed">
-                        {activeTab === "details" && (
-                            <div
-                                className="prose prose-sm max-w-none"
-                                dangerouslySetInnerHTML={{
-                                    __html: markdownToHTML(auction.description || "Chưa có mô tả."),
-                                }}
-                            />
-                        )}
-
-                        {activeTab === "file" && (
-                            <div className="text-gray-700">
-                                <p>📄 Hồ sơ mời đấu giá sẽ được hiển thị ở đây.</p>
-                            </div>
-                        )}
-
-                        {activeTab === "invalid" && (
-                            <div className="text-gray-700">
-                                <p>❌ Danh sách khách hàng không đủ điều kiện sẽ hiển thị ở đây.</p>
-                            </div>
-                        )}
-
-                        {activeTab === "org" && (
-                            <div className="text-gray-700">
-                                <p>🏢 Thông tin đơn vị tổ chức sẽ hiển thị ở đây.</p>
-                            </div>
-                        )}
-                    </div>
-                </div>
+                <AuctionTabs description={auction.description} />
             </section>
             <Footer />
         </main>
