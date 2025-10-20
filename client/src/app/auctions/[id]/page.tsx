@@ -1,10 +1,7 @@
-"use client";
-
-import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import fs from "fs/promises";
+import path from "path";
+import { notFound } from "next/navigation";
 import Image from "next/image";
-import { Home } from "lucide-react";
-import Link from "next/link";
 import TimeBox from "client/src/components/TimeBox";
 import Topbar from "client/src/components/Topbar";
 import Navbar from "client/src/components/Navbar";
@@ -13,7 +10,7 @@ import AuctionTabs from "client/src/components/AuctionTabs";
 
 type AuctionDetail = {
     id: string;
-    title: string;
+    name: string;
     code: string;
     image: string;
     startingPrice: number;
@@ -31,52 +28,39 @@ type AuctionDetail = {
     phone: string;
 };
 
-export default function AuctionDetailPage() {
-    const { id } = useParams();
-    const [auction, setAuction] = useState<AuctionDetail | null>(null);
+/* Dùng fs.readFile() thay vì fetch() */
+async function readMockData() {
+    const filePath = path.join(process.cwd(), "public", "mockdata.json");
+    const file = await fs.readFile(filePath, "utf-8");
+    return JSON.parse(file);
+}
 
-    const [activeTab, setActiveTab] = useState("details");
+/* Tạo static params từ mockdata */
+export async function generateStaticParams() {
+    const data = await readMockData();
+    const allAuctions = [...data.ongoing, ...data.upcoming, ...data.past];
+    return allAuctions.map((auction: AuctionDetail) => ({
+        id: auction.id,
+    }));
+}
 
-    useEffect(() => {
-        setAuction({
-            id: id as string,
-            title:
-                "Khu đất có ký hiệu A1 thuộc dự án Khu tái định cư cuối tuyến Bạch Đằng Đông, phường Sơn Trà, thành phố Đà Nẵng",
-            code: "VNA0000249",
-            image: "/images/khudatA1.jpg",
-            startingPrice: 420000000,
-            deposit: 88418621000,
-            bidStep: 1000000,
-            participationFee: 1000000,
-            registerStart: "08:00 - 29/08/2025",
-            registerEnd: "11:00 - 13/09/2025",
-            auctionStart: "09:00 - 29/10/2025",
-            auctionEnd: "10:00 - 29/11/2025",
-            address:
-                "Trung tâm Cung ứng dịch vụ Văn hóa - Thể thao xã Hóc Môn, TP. Hồ Chí Minh",
-            propertyType: "Quyền khai thác tài sản",
-            description: `
-**THÔNG BÁO ĐẤU GIÁ TÀI SẢN**
+/* Load dữ liệu theo id */
+async function getAuctionById(id: string): Promise<AuctionDetail | null> {
+    const data = await readMockData();
+    const allAuctions = [...data.ongoing, ...data.upcoming, ...data.past];
+    return allAuctions.find((item) => item.id === id) || null;
+}
 
-(Quyền khai thác Căn tin Hội quán (Nhà, công trình xây dựng) (A1) của Trung tâm Cung ứng dịch vụ Văn hóa - Thể thao xã Hóc Môn)
+export default async function AuctionDetailPage({
+    params,
+}: {
+    params: Promise<{ id: string }>;
+}) {
+    // 🧩 Vì params trong App Router mới có thể là Promise, nên phải await
+    const { id } = await params;
 
-**1. Người có tài sản đấu giá:** Trung tâm Cung ứng dịch vụ Văn hóa - Thể thao xã Hóc Môn.  
-**2. Tổ chức đấu giá:** Công ty đấu giá hợp danh Việt Nam.  
-**3. Tài sản đấu giá:** Quyền khai thác Căn tin Hội quán (Nhà, công trình xây dựng).  
-**4. Giá khởi điểm:** 420.000.000 đ  
-**5. Thời gian tổ chức đấu giá:** 09:00 ngày 29/09/2025.
-`,
-            status: "Chờ bắt đầu",
-            phone: "02439842728"
-        });
-    }, [id]);
-
-    if (!auction)
-        return (
-            <div className="flex justify-center items-center min-h-screen">
-                Đang tải dữ liệu...
-            </div>
-        );
+    const auction = await getAuctionById(id);
+    if (!auction) return notFound();
 
     return (
         <main className="min-h-screen font-sans bg-gray-50">
@@ -98,13 +82,13 @@ export default function AuctionDetailPage() {
                         <div className="w-full h-[380px] relative rounded-lg overflow-hidden mb-6">
                             <Image
                                 src={auction.image}
-                                alt={auction.title}
+                                alt={auction.name}
                                 fill
                                 className="object-contain bg-gray-100"
                             />
                         </div>
 
-                        <h2 className="text-xl font-semibold mb-2">{auction.title}</h2>
+                        <h2 className="text-xl font-semibold mb-2">{auction.name}</h2>
                         <p className="text-sm text-gray-600 mb-4">
                             Mã tài sản: <span className="font-semibold">{auction.code}</span>
                         </p>
@@ -218,4 +202,3 @@ function markdownToHTML(md: string) {
         .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
         .replace(/\n/g, "<br/>");
 }
-
