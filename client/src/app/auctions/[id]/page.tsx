@@ -2,11 +2,11 @@ import fs from "fs/promises";
 import path from "path";
 import { notFound } from "next/navigation";
 import Image from "next/image";
-import TimeBox from "client/src/components/TimeBox";
-import Topbar from "client/src/components/Topbar";
-import Navbar from "client/src/components/Navbar";
-import Footer from "client/src/components/Footer";
-import AuctionTabs from "client/src/components/AuctionTabs";
+import TimeBox from "../../../components/TimeBox";
+import Topbar from "../../../components/Topbar";
+import Navbar from "../../../components/Navbar";
+import Footer from "../../../components/Footer";
+import AuctionTabs from "../../../components/AuctionTabs";
 
 type AuctionDetail = {
     id: string;

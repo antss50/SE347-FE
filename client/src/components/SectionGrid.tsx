@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { AuctionItem } from "@/types/auction";
+import { AuctionItem } from "../types/auction";
 
 type SectionGridProps = {
   items: AuctionItem[];

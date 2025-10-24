@@ -1,8 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
-import Topbar from "client/src/components/Topbar";
-import Navbar from "client/src/components/Navbar";
-import Footer from "client/src/components/Footer";
+import Topbar from "../../components/Topbar";
+import Navbar from "../../components/Navbar";
+import Footer from "../../components/Footer";
 import {
     MapPin,
     Phone,
@@ -12,7 +12,7 @@ import {
     Clock,
     Send,
 } from "lucide-react";
-import ConnectSection from "client/src/components/ConnectSection";
+import ConnectSection from "../../components/ConnectSection";
 
 interface Office {
     title: string;
