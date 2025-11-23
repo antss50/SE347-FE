@@ -8,13 +8,8 @@ import SectionGrid from "../components/SectionGrid";
 import Topbar from "../components/Topbar";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import { AuctionItem } from "../types/auction";
-
-type AuctionResponse = {
-  ongoing: AuctionItem[];
-  upcoming: AuctionItem[];
-  past: AuctionItem[];
-};
+import { AuctionItem, ApiAuctionItem, AuctionResponse } from "../types/auction";
+import axios from "axios";
 
 export default function HomePage() {
   const [time, setTime] = useState<string>("");
@@ -24,11 +19,62 @@ export default function HomePage() {
     past: [],
   });
 
+  const getRandomImage = (id: string) => {
+  const images = [
+    "/images/auction-1.jpg", 
+    "/images/auction-2.jpg",
+    "/images/placeholder.jpg"
+  ];
+  // Logic lấy ảnh cố định theo ID (để không bị đổi ảnh khi re-render)
+  return images[id.charCodeAt(id.length - 1) % images.length] || "/images/placeholder.jpg";
+};
+
   useEffect(() => {
-    fetch("/mockData.json", { cache: "no-store" })
-      .then((res) => res.json())
-      .then((data: AuctionResponse) => setAuctions(data))
-      .catch((err) => console.error("Failed to load mockData.json", err));
+    const fetchAuctions = async () => {
+      try {
+        // Gọi API
+        const res = await axios.get('/api/auctions'); // Đảm bảo đúng path backend
+
+        if (res.data && res.data.success) {
+          const rawData: ApiAuctionItem[] = res.data.data || [];
+          const now = new Date();
+
+          const processedData: AuctionItem[] = rawData.map((item) => {
+            const startDate = new Date(item.auctionStartAt);
+            
+            let status: "UPCOMING" | "ONGOING" | "ENDED" = "ENDED";
+            const oneDay = 24 * 60 * 60 * 1000;
+            
+            if (startDate > now) {
+              status = "UPCOMING";
+            } else if (now.getTime() - startDate.getTime() < oneDay) {
+              status = "ONGOING";
+            }
+
+            return {
+              id: item.id,
+              name: item.name,
+              startingPrice: Number(item.startingPrice),
+              deposit: Number(item.depositAmountRequired),
+              time: item.auctionStartAt,
+              image: getRandomImage(item.id),
+              location: "TP. Hồ Chí Minh", 
+              status: status
+            };
+          });
+
+          setAuctions({
+            ongoing: processedData.filter((i) => i.status === "ONGOING"),
+            upcoming: processedData.filter((i) => i.status === "UPCOMING"),
+            past: processedData.filter((i) => i.status === "ENDED"),
+          });
+        }
+      } catch (err) {
+        console.error("Failed to fetch auctions from API", err);
+      }
+    };
+
+    fetchAuctions();
   }, []);
 
   // Cập nhật thời gian thực

@@ -1,0 +1,23 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@auction-hub/shacdn-ui": [
+        "libs/shacdn-ui/src"
+      ],
+      "@auction-hub/shacdn-utils": [
+        "libs/shacdn-utils/src"
+      ],
+      "@auction-hub/shacdn-ui/*": [
+        "libs/shacdn-ui/src/*"
+      ],
+      "@auction-hub/shacdn-utils/*": [
+        "libs/shacdn-utils/src/*"
+      ]
+    }
+  },
+  "include": [],
+  "files": [],
+  "references": []
+}

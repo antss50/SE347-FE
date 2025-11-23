@@ -1,24 +1,26 @@
-export interface AuctionItem {
-    id: string;
-    name: string;             // Tên tài sản đấu giá
-    startingPrice: number;    // Giá khởi điểm
-    deposit: number;          // Tiền đặt trước
-    time: string;             // Thời gian tổ chức (ISO string)
-    image: string;            // Link ảnh
-    location?: string;       // Địa điểm
-    category?: string;         // Loại tài sản
-  };
-  
-  export interface AuctionData {
-    ongoing: AuctionItem[];
-    upcoming: AuctionItem[];
-    past: AuctionItem[];
-  };
+// src/types/auction.ts
 
-  export type FilterOptions = {
-    type: "ongoing" | "upcoming" | "past";
-    priceRange: number[]; 
-    location: string;
-    category: string;
-  };
-  
+export interface ApiAuctionItem {
+  id: string;
+  name: string;
+  startingPrice: string;       
+  depositAmountRequired: string; 
+  auctionStartAt: string;
+}
+
+export interface AuctionItem {
+  id: string;
+  name: string;
+  startingPrice: number;       
+  deposit: number;             
+  time: string;                
+  image: string;               
+  status: "ONGOING" | "UPCOMING" | "ENDED"; 
+  location: string;            
+}
+
+export interface AuctionResponse {
+  ongoing: AuctionItem[];
+  upcoming: AuctionItem[];
+  past: AuctionItem[];
+}
