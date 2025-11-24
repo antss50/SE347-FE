@@ -18,22 +18,21 @@ export default function HomePage() {
     upcoming: [],
     past: [],
   });
-
+  
+  // Get image (in process...)
   const getRandomImage = (id: string) => {
   const images = [
     "/images/auction-1.jpg", 
     "/images/auction-2.jpg",
     "/images/placeholder.jpg"
   ];
-  // Logic lấy ảnh cố định theo ID (để không bị đổi ảnh khi re-render)
   return images[id.charCodeAt(id.length - 1) % images.length] || "/images/placeholder.jpg";
 };
 
   useEffect(() => {
     const fetchAuctions = async () => {
       try {
-        // Gọi API
-        const res = await axios.get('/api/auctions'); // Đảm bảo đúng path backend
+        const res = await axios.get('/auctions'); 
 
         if (res.data && res.data.success) {
           const rawData: ApiAuctionItem[] = res.data.data || [];
@@ -56,9 +55,9 @@ export default function HomePage() {
               name: item.name,
               startingPrice: Number(item.startingPrice),
               deposit: Number(item.depositAmountRequired),
-              time: item.auctionStartAt,
+              time: new Date(item.auctionStartAt).toLocaleTimeString("vi-VN", { hour12: false }),
               image: getRandomImage(item.id),
-              location: "TP. Hồ Chí Minh", 
+              location: "TP Hồ Chí Minh", 
               status: status
             };
           });
@@ -77,7 +76,7 @@ export default function HomePage() {
     fetchAuctions();
   }, []);
 
-  // Cập nhật thời gian thực
+  // Update clock every second
   useEffect(() => {
     const updateClock = () => {
       const now = new Date();

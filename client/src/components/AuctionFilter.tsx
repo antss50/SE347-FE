@@ -17,7 +17,7 @@ import { Button } from "libs/shacdn-ui/src/button";
 
 // Định nghĩa lại type này ở đây hoặc import từ file types nếu bạn đã update nó
 export type FilterOptions = {
-  type: "ongoing" | "upcoming" | "past";
+  type: "ongoing" | "upcoming" | "ended";
   priceRange: number[];
   location: string;
   category: string;
@@ -25,12 +25,12 @@ export type FilterOptions = {
 
 type AuctionFilterProps = {
   onFilterChange: (filters: FilterOptions) => void;
-  currentType: "ongoing" | "upcoming" | "past"; // 👉 Thêm prop này để nhận từ URL
+  currentType: "ongoing" | "upcoming" | "ended"; 
 };
 
 export default function AuctionFilter({ onFilterChange, currentType }: AuctionFilterProps) {
   // Khởi tạo state dựa trên props truyền vào
-  const [selectedType, setSelectedType] = useState<"ongoing" | "upcoming" | "past">(currentType);
+  const [selectedType, setSelectedType] = useState<"ongoing" | "upcoming" | "ended">(currentType);
   const [priceRange, setPriceRange] = useState([0, 10000000000]);
   const [location, setLocation] = useState("");
   const [category, setCategory] = useState("");
@@ -95,7 +95,7 @@ export default function AuctionFilter({ onFilterChange, currentType }: AuctionFi
           <Label className="mb-3 block font-semibold">Thời gian đấu giá</Label>
           <RadioGroup
             value={selectedType}
-            onValueChange={(val) => setSelectedType(val as "ongoing" | "upcoming" | "past")}
+            onValueChange={(val) => setSelectedType(val as "ongoing" | "upcoming" | "ended")}
             className="flex flex-col space-y-2"
           >
             <div className="flex items-center space-x-2">

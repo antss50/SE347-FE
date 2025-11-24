@@ -56,7 +56,6 @@ export default async function AuctionDetailPage({
 }: {
     params: Promise<{ id: string }>;
 }) {
-    // 🧩 Vì params trong App Router mới có thể là Promise, nên phải await
     const { id } = await params;
 
     const auction = await getAuctionById(id);

@@ -15,7 +15,7 @@ import axios from "axios";
 
 // Định nghĩa lại type cho bộ lọc
 type FilterState = {
-  type: "ongoing" | "upcoming" | "past";
+  type: "ongoing" | "upcoming" | "ended";
   priceRange: number[];
   location: string;
   category: string;
@@ -23,10 +23,10 @@ type FilterState = {
 
 function AuctionsContent() {
   const router = useRouter();
-  const searchParams = useSearchParams(); // Lấy tham số từ URL
+  const searchParams = useSearchParams(); 
 
-  // Lấy type từ URL hoặc mặc định là 'ongoing'
-  const initialType = (searchParams.get("type") as "ongoing" | "upcoming" | "past") || "ongoing";
+  // Get type from URL query, default to "ongoing"
+  const initialType = (searchParams.get("type") as "ongoing" | "upcoming" | "ended") || "ongoing";
 
   const [filters, setFilters] = useState<FilterState>({
     type: initialType,
@@ -37,7 +37,7 @@ function AuctionsContent() {
 
   const [auctions, setAuctions] = useState<AuctionItem[]>([]);
 
-  // Hàm helper random ảnh (tái sử dụng logic)
+  // Helper function to get random image (in process...)
   const getRandomImage = (id: string) => {
     const images = ["/images/auction-1.jpg", "/images/auction-2.jpg", "/images/placeholder.jpg"];
     return images[id.charCodeAt(id.length - 1) % images.length];
@@ -52,13 +52,11 @@ function AuctionsContent() {
           const rawData: ApiAuctionItem[] = res.data.data || [];
           const now = new Date();
 
-          // 1. MAP DỮ LIỆU: Raw -> Processed (Có status, number price)
           const processedData: AuctionItem[] = rawData.map((item) => {
             const startDate = new Date(item.auctionStartAt);
             const oneDay = 24 * 60 * 60 * 1000;
             
-            // Logic tính trạng thái để so khớp với bộ lọc
-            let status: "ongoing" | "upcoming" | "past" = "past"; // Lưu ý: dùng chữ thường để dễ so sánh
+            let status: "ongoing" | "upcoming" | "ended" = "ended"; 
             
             if (startDate > now) {
               status = "upcoming";
@@ -69,34 +67,32 @@ function AuctionsContent() {
             return {
               id: item.id,
               name: item.name,
-              startingPrice: Number(item.startingPrice), // Quan trọng: Convert String -> Number
+              startingPrice: Number(item.startingPrice), 
               deposit: Number(item.depositAmountRequired),
-              time: item.auctionStartAt,
+              time: new Date(item.auctionStartAt).toLocaleTimeString("vi-VN", { hour12: false }),
               image: getRandomImage(item.id),
-              location: "TP. Hồ Chí Minh", // Fake location
-              category: "Bất động sản", // Fake category
-              status: status as any, // Ép kiểu tạm để dùng cho logic lọc bên dưới
+              location: "TP. Hồ Chí Minh", 
+              category: "Bất động sản", 
+              status: status as any, 
             };
           });
 
-          // 2. LỌC DỮ LIỆU (Client-side filtering)
           let result = processedData;
-
-          // Lọc theo Type (ongoing, upcoming, past)
-          // So sánh: item.status (đã tính toán ở trên) với filters.type
+          
+          // Filter by type
           result = result.filter(item => (item.status as any) === filters.type);
 
-          // Lọc theo giá
+          // Filter by price range
           result = result.filter((item) => 
             item.startingPrice >= filters.priceRange[0] && item.startingPrice <= filters.priceRange[1]
           );
 
-          // Lọc theo địa điểm
+          // Filter by location
           if (filters.location) {
             result = result.filter((item) => item.location === filters.location);
           }
 
-          // Lọc theo danh mục
+          // Filter by category
           // if (filters.category && filters.category !== "all") {
           //   result = result.filter((item) => item.category === filters.category);
           // }
@@ -113,7 +109,6 @@ function AuctionsContent() {
 
   // Hàm xử lý khi thay đổi bộ lọc
   const handleFilterChange = (newFilters: any) => {
-    // Lưu ý: AuctionFilter có thể trả về cấu trúc khác, cần đảm bảo mapping đúng
     setFilters((prev) => ({
       ...prev,
       ...newFilters
@@ -143,7 +138,7 @@ function AuctionsContent() {
       {/* Đảm bảo AuctionFilter nhận props đúng type */}
       <AuctionFilter 
         onFilterChange={handleFilterChange} 
-        currentType={filters.type} // Truyền type hiện tại xuống để highlight button
+        currentType={filters.type} 
       />
 
       <div className="max-w-7xl mx-auto px-6 py-8">
