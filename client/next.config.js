@@ -7,14 +7,15 @@ const { composePlugins, withNx } = require('@nx/next');
  * @type {import('@nx/next/plugins/with-nx').WithNxOptions}
  **/
 const nextConfig = {
-  // Use this to set Nx-specific options
-  // See: https://nx.dev/recipes/next/next-config-setup
-  nx: {},
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        // Thay cổng 3000 bằng cổng backend thực tế của bạn (ví dụ NestJS thường là 3000 hoặc 3333)
+        destination: 'http://localhost:3000/api/:path*', 
+      },
+    ]
+  },
 };
 
-const plugins = [
-  // Add more Next.js plugins to this list if needed.
-  withNx,
-];
-
-module.exports = composePlugins(...plugins)(nextConfig);
+module.exports = nextConfig;

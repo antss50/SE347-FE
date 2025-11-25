@@ -1,9 +1,30 @@
+'use client';
+
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "libs/shacdn-ui/src/button";
 import CurrentTime from "../components/CurrentTime";
+import { useRouter } from "next/navigation";
+import { useAuth } from "../contexts/AuthContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../../../libs/shacdn-ui/src/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "../../../libs/shacdn-ui/src/avatar";
 
 export default function Navbar() {
+  const { isAuthenticated, user, logout } = useAuth();
+  const router = useRouter();
+
+  const handleLogout = () => {
+    logout(); // Xóa cookie, reset state
+    router.push("/"); // Redirect về trang chủ
+  };
+
   return (
     <nav className="bg-white shadow flex items-center justify-between px-6 py-3 sticky top-0 z-50">
       {/* Logo */}
@@ -24,12 +45,46 @@ export default function Navbar() {
       {/* Auth + Time */}
       <div className="flex items-center gap-4">
         <CurrentTime />
-        <Button variant="outline" className="border-yellow-500 text-yellow-600 hover:bg-yellow-50 cursor-pointer">
-          Đăng nhập
-        </Button>
-        <Button className="bg-yellow-500 hover:bg-yellow-600 text-white cursor-pointer">
-          Đăng ký
-        </Button>
+        {isAuthenticated ? (
+          // 1. Nếu đã đăng nhập (Authenticated)
+          <DropdownMenu>
+            {/* <DropdownMenuTrigger asChild>
+              <Avatar className="cursor-pointer">
+                <AvatarImage src={user?.avatar_url || ""} alt={user?.full_name || "User"} />
+                <AvatarFallback>
+                  {user?.full_name?.charAt(0).toUpperCase() || "U"}
+                </AvatarFallback>
+              </Avatar>
+            </DropdownMenuTrigger> */}
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>
+                Chào, {user?.full_name || "Người dùng"}
+                <p className="text-xs font-normal text-gray-500">{user?.email}</p>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild className="cursor-pointer">
+                <Link href="/dashboard/profile">Quản lý tài khoản</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className="cursor-pointer">
+                <Link href="/dashboard/my-auctions">Phiên đấu giá của tôi</Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleLogout} className="text-red-500 cursor-pointer">
+                Đăng xuất
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : (
+          // 2. Nếu chưa đăng nhập (Original Code)
+          <>
+            <Button asChild variant="outline" className="border-yellow-500 text-yellow-600 hover:bg-yellow-50 cursor-pointer">
+              <Link href="/auth/login">Đăng nhập</Link>
+            </Button>
+            <Button asChild className="bg-yellow-500 hover:bg-yellow-600 text-white cursor-pointer">
+              <Link href="/auth/register">Đăng ký</Link>
+            </Button>
+          </>
+        )}
       </div>
     </nav >
   );
