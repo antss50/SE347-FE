@@ -15,7 +15,7 @@ import axios from "axios";
 
 // Định nghĩa lại type cho bộ lọc
 type FilterState = {
-  type: "ongoing" | "upcoming" | "ended";
+  type: "ongoing" | "upcoming" | "past";
   priceRange: number[];
   location: string;
   category: string;
@@ -26,7 +26,7 @@ function AuctionsContent() {
   const searchParams = useSearchParams(); 
 
   // Get type from URL query, default to "ongoing"
-  const initialType = (searchParams.get("type") as "ongoing" | "upcoming" | "ended") || "ongoing";
+  const initialType = (searchParams.get("type") as "ongoing" | "upcoming" | "past") || "ongoing";
 
   const [filters, setFilters] = useState<FilterState>({
     type: initialType,
@@ -39,7 +39,7 @@ function AuctionsContent() {
 
   // Helper function to get random image (in process...)
   const getRandomImage = (id: string) => {
-    const images = ["/images/auction-1.jpg", "/images/auction-2.jpg", "/images/placeholder.jpg"];
+    const images = ["/images/auction-logo.jpg", "/images/auction-logo.jpg", "/images/auction-logo.jpg"];
     return images[id.charCodeAt(id.length - 1) % images.length];
   };
 
@@ -56,7 +56,7 @@ function AuctionsContent() {
             const startDate = new Date(item.auctionStartAt);
             const oneDay = 24 * 60 * 60 * 1000;
             
-            let status: "ongoing" | "upcoming" | "ended" = "ended"; 
+            let status: "upcoming" | "ongoing" | "past" = "past"; 
             
             if (startDate > now) {
               status = "upcoming";
@@ -69,11 +69,18 @@ function AuctionsContent() {
               name: item.name,
               startingPrice: Number(item.startingPrice), 
               deposit: Number(item.depositAmountRequired),
-              time: new Date(item.auctionStartAt).toLocaleTimeString("vi-VN", { hour12: false }),
+              time: new Date(item.auctionStartAt).toLocaleTimeString("vi-VN", { 
+                hour12: false,
+                day: '2-digit', 
+                month: '2-digit', 
+                year: 'numeric', 
+                hour: '2-digit', 
+                minute: '2-digit'
+              }),              
               image: getRandomImage(item.id),
               location: "TP. Hồ Chí Minh", 
               category: "Bất động sản", 
-              status: status as any, 
+              status: status as any
             };
           });
 

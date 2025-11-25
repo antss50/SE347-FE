@@ -15,7 +15,7 @@ export interface AuctionItem {
   deposit: number;             
   time: string;                
   image: string;               
-  status: "ONGOING" | "UPCOMING" | "ENDED"; 
+  status: "ONGOING" | "UPCOMING" | "PAST"; 
   location: string;            
 }
 

@@ -13,6 +13,7 @@ import axios from "axios";
 
 export default function HomePage() {
   const [time, setTime] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(true);
   const [auctions, setAuctions] = useState<AuctionResponse>({
     ongoing: [],
     upcoming: [],
@@ -22,26 +23,32 @@ export default function HomePage() {
   // Get image (in process...)
   const getRandomImage = (id: string) => {
   const images = [
-    "/images/auction-1.jpg", 
-    "/images/auction-2.jpg",
-    "/images/placeholder.jpg"
+    "/images/auction-logo.jpg", 
+    "/images/auction-logo.jpg",
+    "/images/auction-logo.jpg"
   ];
-  return images[id.charCodeAt(id.length - 1) % images.length] || "/images/placeholder.jpg";
+  return images[id.charCodeAt(id.length - 1) % images.length] || "/images/auction-logo.jpg";
 };
 
   useEffect(() => {
     const fetchAuctions = async () => {
       try {
-        const res = await axios.get('/auctions'); 
+        setLoading(true);
+        const res = await axios.get('/api/auctions'); 
+
+        console.log("API Response:", res.data);
 
         if (res.data && res.data.success) {
           const rawData: ApiAuctionItem[] = res.data.data || [];
+
+          console.log("Fetched auction data:", rawData);
+
           const now = new Date();
 
           const processedData: AuctionItem[] = rawData.map((item) => {
             const startDate = new Date(item.auctionStartAt);
             
-            let status: "UPCOMING" | "ONGOING" | "ENDED" = "ENDED";
+            let status: "UPCOMING" | "ONGOING" | "PAST" = "PAST";
             const oneDay = 24 * 60 * 60 * 1000;
             
             if (startDate > now) {
@@ -55,21 +62,32 @@ export default function HomePage() {
               name: item.name,
               startingPrice: Number(item.startingPrice),
               deposit: Number(item.depositAmountRequired),
-              time: new Date(item.auctionStartAt).toLocaleTimeString("vi-VN", { hour12: false }),
+              time: new Date(item.auctionStartAt).toLocaleTimeString("vi-VN", { 
+                hour12: false,
+                day: '2-digit', 
+                month: '2-digit', 
+                year: 'numeric', 
+                hour: '2-digit', 
+                minute: '2-digit'
+              }),
               image: getRandomImage(item.id),
               location: "TP Hồ Chí Minh", 
               status: status
             };
           });
 
+          console.log("Processed auction data:", processedData);
+
           setAuctions({
             ongoing: processedData.filter((i) => i.status === "ONGOING"),
             upcoming: processedData.filter((i) => i.status === "UPCOMING"),
-            past: processedData.filter((i) => i.status === "ENDED"),
+            past: processedData.filter((i) => i.status === "PAST"),
           });
         }
       } catch (err) {
         console.error("Failed to fetch auctions from API", err);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -89,6 +107,10 @@ export default function HomePage() {
     const interval = setInterval(updateClock, 1000);
     return () => clearInterval(interval);
   }, []);
+
+  if (loading) {
+    return <div className="flex h-screen items-center justify-center">Loading...</div>;
+  }
 
   return (
     <main className="w-full min-h-screen font-sans">
