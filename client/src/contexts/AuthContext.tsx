@@ -6,7 +6,7 @@ import { User } from '../types/auth.types';
 type AuthContextType = {
     user: User | null;
     isAuthenticated: boolean;
-    login: (userData : User, token : string) => void;
+    login: (userData: User, token: string) => void;
     logout: () => void;
 };
 
@@ -18,7 +18,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const token = Cookies.get('access_token'); 
+        const token = Cookies.get('access_token');
 
         if (token) {
             setIsAuthenticated(true);
@@ -26,7 +26,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setLoading(false);
     }, []);
 
-    const login = (userData : User, token : string) => {
+    const login = (userData: User, token: string) => {
         setUser(userData);
         setIsAuthenticated(true);
         Cookies.set('access_token', token);
@@ -57,4 +57,3 @@ export const useAuth = () => {
     return context;
 }
 
-   

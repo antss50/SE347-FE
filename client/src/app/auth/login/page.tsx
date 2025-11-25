@@ -31,14 +31,14 @@ import { set } from "zod";
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const auth = useAuth(); 
+  const auth = useAuth();
   const [loading, setLoading] = useState(false);
 
   // Initialize Form
   const form = useForm<LoginSchema>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "",  
+      email: "",
       password: ""
     },
   });
@@ -63,23 +63,23 @@ export default function LoginPage() {
       auth.login(user, access_token);
 
       toast({ title: "Đăng nhập thành công!" });
-      router.push("/"); 
+      router.push("/");
 
     } catch (error: any) {
-        console.error("Login Error:", error);
-        if (error.response?.status === 401) {
-          toast({
-            title: "Chưa xác thực email",
-            description: "Vui lòng kiểm tra email để xác thực tài khoản.",
-            variant: "destructive",
-          });
-        } else {
-          toast({
-            title: "Đăng nhập thất bại",
-            description: "Sai email hoặc mật khẩu. Vui lòng thử lại.",
-            variant: "destructive",
-          });
-        }
+      console.error("Login Error:", error);
+      if (error.response?.status === 401) {
+        toast({
+          title: "Chưa xác thực email",
+          description: "Vui lòng kiểm tra email để xác thực tài khoản.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Đăng nhập thất bại",
+          description: "Sai email hoặc mật khẩu. Vui lòng thử lại.",
+          variant: "destructive",
+        });
+      }
     }
   }
 
@@ -126,6 +126,16 @@ export default function LoginPage() {
                 </FormItem>
               )}
             />
+
+            <div className="flex justify-end -mt-3">
+              <a
+                href="/auth/forgot-password"
+                className="text-sm text-blue-600 hover:underline"
+              >
+                Quên mật khẩu?
+              </a>
+            </div>
+
 
             <p className="text-sm text-center text-gray-600">
               Chưa có tài khoản?{" "}
