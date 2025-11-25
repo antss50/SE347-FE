@@ -27,7 +27,10 @@ const SectionGrid = ({ items }: SectionGridProps) => {
             </div>
 
             <div className="bg-yellow-400 p-4">
-              <h3 className="font-bold mb-2">{item.name}</h3>
+              <h3 className="font-bold text-gray-800 mb-3 text-base line-clamp-2 min-h-[3rem]"
+                  title={item.name}>
+                    {item.name}
+              </h3>
               <p className="flex justify-between text-sm font-light">
                 Giá khởi điểm:{" "}
                 <span className="font-semibold">
