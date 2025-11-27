@@ -29,7 +29,8 @@
       ],
       "@auction-hub/shacdn-utils/*": [
         "libs/shacdn-utils/src/*"
-      ]
+      ],
+      "@auction-hub/axios": ["libs/axios.ts"],
     }
   },
   "exclude": [

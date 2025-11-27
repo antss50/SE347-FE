@@ -8,7 +8,7 @@ import { loginUser } from "../../../services/authService";
 import { useAuth } from "../../../contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { useToast } from "../../../../../libs/shacdn-ui/src/hooks/use-toast";
-
+import { useState } from "react";
 import { Button } from "../../../../../libs/shacdn-ui/src/button";
 import { Input } from "../../../../../libs/shacdn-ui/src/input";
 import {
@@ -26,39 +26,47 @@ import {
   CardHeader,
   CardTitle,
 } from "../../../../../libs/shacdn-ui/src/card";
+import { set } from "zod";
 
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
   const auth = useAuth(); 
+  const [loading, setLoading] = useState(false);
 
   // Initialize Form
   const form = useForm<LoginSchema>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "",
-      identity_number: "",
-      phone_number: "",
-      tax_id: "",
-      password: "",
+      email: "",  
+      password: ""
     },
   });
 
   async function onSubmit(data: LoginSchema) {
+    setLoading(true);
     try {
-      const payload = { email: data.email, password: data.password };
-      const response = await loginUser(payload as any);
+      const response = await loginUser({
+        email: data.email,
+        password: data.password,
+      });
 
       // Get user and token from returned data
+      const loginData = response.data || response;
       const { user, access_token } = (response.data as any).data;
 
+
+      if (!access_token || !user) {
+        throw new Error("Phản hồi từ server không hợp lệ");
+      }
       // Call login function from context
       auth.login(user, access_token);
 
-        toast({ title: "Đăng nhập thành công!" });
-      router.push("/dashboard"); 
+      toast({ title: "Đăng nhập thành công!" });
+      router.push("/"); 
 
     } catch (error: any) {
+        console.error("Login Error:", error);
         if (error.response?.status === 401) {
           toast({
             title: "Chưa xác thực email",

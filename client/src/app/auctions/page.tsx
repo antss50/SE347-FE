@@ -46,23 +46,36 @@ function AuctionsContent() {
   useEffect(() => {
     const fetchAuctions = async () => {
       try {
-        const res = await axios.get('/api/auctions');
+        let statusParam = filters.type.toUpperCase();
+        if (filters.type === 'past') {
+            statusParam = 'ENDED';
+        }
+
+        const params = {
+          page: 1,
+          limit: 10,
+          status: statusParam, 
+          minPrice: filters.priceRange[0],
+          maxPrice: filters.priceRange[1],
+          location: filters.location === 'all' ? undefined : filters.location,
+        };
+        const res = await axios.get('/api/auctions', { params });
         
         if (res.data && res.data.success) {
           const rawData: ApiAuctionItem[] = res.data.data || [];
-          const now = new Date();
+          // const now = new Date();
 
           const processedData: AuctionItem[] = rawData.map((item) => {
-            const startDate = new Date(item.auctionStartAt);
-            const oneDay = 24 * 60 * 60 * 1000;
+            // const startDate = new Date(item.auctionStartAt);
+            // const oneDay = 24 * 60 * 60 * 1000;
             
-            let status: "upcoming" | "ongoing" | "past" = "past"; 
+            // let status: "upcoming" | "ongoing" | "past" = "past"; 
             
-            if (startDate > now) {
-              status = "upcoming";
-            } else if (now.getTime() - startDate.getTime() < oneDay) {
-              status = "ongoing";
-            }
+            // if (startDate > now) {
+            //   status = "upcoming";
+            // } else if (now.getTime() - startDate.getTime() < oneDay) {
+            //   status = "ongoing";
+            // }
 
             return {
               id: item.id,
@@ -80,31 +93,31 @@ function AuctionsContent() {
               image: getRandomImage(item.id),
               location: "TP. Hồ Chí Minh", 
               category: "Bất động sản", 
-              status: status as any
+              status: filters.type as any
             };
           });
 
-          let result = processedData;
+          // let result = processedData;
           
-          // Filter by type
-          result = result.filter(item => (item.status as any) === filters.type);
+          // // Filter by type
+          // result = result.filter(item => (item.status as any) === filters.type);
 
-          // Filter by price range
-          result = result.filter((item) => 
-            item.startingPrice >= filters.priceRange[0] && item.startingPrice <= filters.priceRange[1]
-          );
+          // // Filter by price range
+          // result = result.filter((item) => 
+          //   item.startingPrice >= filters.priceRange[0] && item.startingPrice <= filters.priceRange[1]
+          // );
 
-          // Filter by location
-          if (filters.location) {
-            result = result.filter((item) => item.location === filters.location);
-          }
+          // // Filter by location
+          // if (filters.location) {
+          //   result = result.filter((item) => item.location === filters.location);
+          // }
 
           // Filter by category
           // if (filters.category && filters.category !== "all") {
           //   result = result.filter((item) => item.category === filters.category);
           // }
 
-          setAuctions(result);
+          setAuctions(processedData);
         }
       } catch (err) {
         console.error("Failed to fetch auctions from API", err);
@@ -112,7 +125,7 @@ function AuctionsContent() {
     };
 
     fetchAuctions();
-  }, [filters]); // Chạy lại khi filters thay đổi
+  }, [filters]); 
 
   // Hàm xử lý khi thay đổi bộ lọc
   const handleFilterChange = (newFilters: any) => {

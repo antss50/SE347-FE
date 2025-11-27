@@ -1,18 +1,18 @@
 export type User = {
-    user_id: string;
+    id: string;
     email: string;
     full_name: string;
     phone_number: string | null;
     user_type: 'individual' | 'business';
     identity_number: string | null;
-    tax_id: string | null;
-    email_verified: boolean;
-    created_at: string;
+    tax_id?: string | null;
 };
 
 export type LoginResponse = {
     user: User;
     access_token: string;
+    refresh_token: string;
+    expires_in: number;
 };
 
 export type RegisterResponse = {
@@ -21,11 +21,18 @@ export type RegisterResponse = {
     verification_required: boolean;
 }
 
+export type PaginationMeta = {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+}
+
 export type ApiResponse<T> = {
     success: boolean;
     message: string;
     data: T;
-    meta: unknown;
+    meta?: PaginationMeta | unknown;
     timestamp: string;
     path: string;
 }

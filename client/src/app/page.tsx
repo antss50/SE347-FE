@@ -9,7 +9,7 @@ import Topbar from "../components/Topbar";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { AuctionItem, ApiAuctionItem, AuctionResponse } from "../types/auction";
-import axios from "axios";
+import apiClient from "axios";
 
 export default function HomePage() {
   const [time, setTime] = useState<string>("");
@@ -34,7 +34,7 @@ export default function HomePage() {
     const fetchAuctions = async () => {
       try {
         setLoading(true);
-        const res = await axios.get('/api/auctions'); 
+        const res = await apiClient.get('/api/auctions'); 
 
         console.log("API Response:", res.data);
 

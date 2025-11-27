@@ -50,13 +50,27 @@ export default function RegisterPage() {
   // Update onSubmit function
   async function onSubmit(data: RegisterFormSchema) {
     // Separate attributes used only in UI (confirmPassword, acceptTerms) from the data sent to the API
-    const { confirmPassword, acceptTerms, ...apiData } = data;
+    const { confirmPassword, acceptTerms, ...rest  } = data;
+    let apiData: any = {
+      email: rest.email,
+      password: rest.password,
+      full_name: rest.full_name,
+      phone_number: rest.phone_number,
+      user_type: rest.user_type,
+      identity_number: rest.user_type === "individual" ? rest.identity_number : rest.tax_id,
+    };
 
+    if (rest.user_type === "individual") {
+      apiData.identity_number = rest.identity_number;
+    }
+    if (rest.user_type === "business") {
+      apiData.tax_id = rest.tax_id;
+    }
     try {
       const res = await registerUser(apiData);
-      // toast({ title: "Đăng ký thành công!", description: "Vui lòng kiểm tra email để xác thực tài khoản." });
+      toast({ title: "Đăng ký thành công!", description: "Vui lòng kiểm tra email để xác thực tài khoản." });
       const email =
-        (res?.data as any)?.data?.email || apiData.email || "";
+        (res?.data as any)?.data?.email || data.email || "";
       router.push(`/auth/register/success?email=${encodeURIComponent(email)}`);
     } catch (error: any) {
       if (error.response?.status === 400) {
