@@ -126,12 +126,28 @@ export default function AuctionFilter({ onFilterChange, currentType }: AuctionFi
               <Label htmlFor="all" className="cursor-pointer">Tất cả</Label>
             </div>
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="Bất động sản" id="land" />
-              <Label htmlFor="land" className="cursor-pointer">Quyền sử dụng nhà & đất</Label>
+              <RadioGroupItem value="secured_asset" id="secured_asset" />
+              <Label htmlFor="secured_asset" className="cursor-pointer">Tài sản đảm bảo</Label>
             </div>
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="Phương tiện" id="vehicle" />
-              <Label htmlFor="vehicle" className="cursor-pointer">Phương tiện giao thông</Label>
+              <RadioGroupItem value="land_use_rights" id="land_use_rights" />
+              <Label htmlFor="land_use_rights" className="cursor-pointer">Quyền sử dụng nhà & đất</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="administrative_violation_asset" id="administrative_violation_asset" />
+              <Label htmlFor="administrative_violation_asset" className="cursor-pointer">Tài sản vi phạm hành chính</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="state_asset" id="state_asset" />
+              <Label htmlFor="state_asset" className="cursor-pointer">Tài sản nhà nước</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="enforcement_asset" id="enforcement_asset" />
+              <Label htmlFor="enforcement_asset" className="cursor-pointer">Tài sản thi hành án</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="other_asset" id="other_asset" />
+              <Label htmlFor="other_asset" className="cursor-pointer">Tài sản khác</Label>
             </div>
              {/* Thêm các option khác nếu cần, value phải khớp với logic filter ở cha */}
           </RadioGroup>

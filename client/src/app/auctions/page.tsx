@@ -43,40 +43,58 @@ function AuctionsContent() {
     return images[id.charCodeAt(id.length - 1) % images.length];
   };
 
+  const getAuctionType = (category : string) => {
+    if (!category || category === "all") 
+      return undefined;
+    const map: Record<string, string> = {
+      "secured_asset": "secured_asset",
+      "land_use_rights": "land_use_rights",
+      "administrative_violation_asset": "administrative_violation_asset",
+      "state_asset": "state_asset",
+      "enforcement_asset": "enforcement_asset",
+      "other_asset": "other_asset",
+    };
+    return map[category] || category;
+  }
+
   useEffect(() => {
     const fetchAuctions = async () => {
       try {
-        let statusParam = filters.type.toUpperCase();
-        if (filters.type === 'past') {
-            statusParam = 'ENDED';
-        }
+        let statusParam = 'now'; // Mặc định
+        if (filters.type === 'upcoming') statusParam = 'upcoming';
+        if (filters.type === 'past') statusParam = 'completed';
 
         const params = {
           page: 1,
           limit: 10,
           status: statusParam, 
-          minPrice: filters.priceRange[0],
-          maxPrice: filters.priceRange[1],
-          location: filters.location === 'all' ? undefined : filters.location,
+          auctionType: getAuctionType(filters.category),
+          sortBy: 'createdAt', 
+          sortOrder: 'desc',
         };
-        const res = await axios.get('/api/auctions', { params });
+        const resFirstPage = await axios.get('/api/auctions', { params });
         
-        if (res.data && res.data.success) {
-          const rawData: ApiAuctionItem[] = res.data.data || [];
-          // const now = new Date();
+        if (resFirstPage.data && resFirstPage.data.success) {
+          const { totalPages } = resFirstPage.data.meta;
+          let allRawData: ApiAuctionItem[] = resFirstPage.data.data || [];
 
-          const processedData: AuctionItem[] = rawData.map((item) => {
-            // const startDate = new Date(item.auctionStartAt);
-            // const oneDay = 24 * 60 * 60 * 1000;
-            
-            // let status: "upcoming" | "ongoing" | "past" = "past"; 
-            
-            // if (startDate > now) {
-            //   status = "upcoming";
-            // } else if (now.getTime() - startDate.getTime() < oneDay) {
-            //   status = "ongoing";
-            // }
+          if (totalPages > 1) {
+            for (let page = 2; page <= totalPages; page++) {
+              try {
+                const resNext = await axios.get('api/auctions', { 
+                  params: { ...params, page } 
+                });
+                
+                if (resNext.data?.success) {
+                  allRawData = [...allRawData, ...resNext.data.data];
+                }
+              } catch (e) {
+                console.warn(`Lỗi khi tải trang ${page}`, e);
+              }
+            }
+          }
 
+          const processedData: AuctionItem[] = allRawData.map((item) => {
             return {
               id: item.id,
               name: item.name,
@@ -92,32 +110,23 @@ function AuctionsContent() {
               }),              
               image: getRandomImage(item.id),
               location: "TP. Hồ Chí Minh", 
-              category: "Bất động sản", 
+              category: "Tài sản", 
               status: filters.type as any
             };
           });
 
-          // let result = processedData;
-          
-          // // Filter by type
-          // result = result.filter(item => (item.status as any) === filters.type);
+          let finalResult = processedData;
+          // Lọc giá
+          finalResult = finalResult.filter((item) => 
+            item.startingPrice >= filters.priceRange[0] && 
+            item.startingPrice <= filters.priceRange[1]
+          );
 
-          // // Filter by price range
-          // result = result.filter((item) => 
-          //   item.startingPrice >= filters.priceRange[0] && item.startingPrice <= filters.priceRange[1]
-          // );
+          // Lọc địa điểm (nếu có)
 
-          // // Filter by location
-          // if (filters.location) {
-          //   result = result.filter((item) => item.location === filters.location);
-          // }
-
-          // Filter by category
-          // if (filters.category && filters.category !== "all") {
-          //   result = result.filter((item) => item.category === filters.category);
-          // }
-
-          setAuctions(processedData);
+          setAuctions(finalResult);
+        } else {
+          setAuctions([]);
         }
       } catch (err) {
         console.error("Failed to fetch auctions from API", err);
@@ -134,7 +143,7 @@ function AuctionsContent() {
       ...newFilters
     }));
     
-    if (newFilters.type) {
+    if (newFilters.type && newFilters.type !== filters.type) {
       router.push(`/auctions?type=${newFilters.type}`);
     }
   };
