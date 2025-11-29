@@ -17,7 +17,7 @@ import { Button } from "libs/shacdn-ui/src/button";
 
 // Định nghĩa lại type này ở đây hoặc import từ file types nếu bạn đã update nó
 export type FilterOptions = {
-  type: "ongoing" | "upcoming" | "past";
+  type: "now" | "upcoming" | "completed";
   priceRange: number[];
   location: string;
   category: string;
@@ -25,12 +25,12 @@ export type FilterOptions = {
 
 type AuctionFilterProps = {
   onFilterChange: (filters: FilterOptions) => void;
-  currentType: "ongoing" | "upcoming" | "past"; 
+  currentType: "now" | "upcoming" | "completed";
 };
 
 export default function AuctionFilter({ onFilterChange, currentType }: AuctionFilterProps) {
   // Khởi tạo state dựa trên props truyền vào
-  const [selectedType, setSelectedType] = useState<"ongoing" | "upcoming" | "past">(currentType);
+  const [selectedType, setSelectedType] = useState<"now" | "upcoming" | "completed">(currentType);
   const [priceRange, setPriceRange] = useState([0, 10000000000]);
   const [location, setLocation] = useState("");
   const [category, setCategory] = useState("");
@@ -53,11 +53,11 @@ export default function AuctionFilter({ onFilterChange, currentType }: AuctionFi
   // Hàm xử lý khi nhấn nút Đặt lại
   const handleReset = () => {
     // Reset về trạng thái hiện tại của URL hoặc về mặc định
-    setSelectedType(currentType); 
+    setSelectedType(currentType);
     setPriceRange([0, 10000000000]);
     setLocation("");
     setCategory("");
-    
+
     // Gửi tín hiệu reset lên cha
     onFilterChange({
       type: currentType,
@@ -95,20 +95,20 @@ export default function AuctionFilter({ onFilterChange, currentType }: AuctionFi
           <Label className="mb-3 block font-semibold">Thời gian đấu giá</Label>
           <RadioGroup
             value={selectedType}
-            onValueChange={(val) => setSelectedType(val as "ongoing" | "upcoming" | "past")}
+            onValueChange={(val) => setSelectedType(val as "now" | "upcoming" | "completed")}
             className="flex flex-col space-y-2"
           >
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="ongoing" id="ongoing" />
-              <Label htmlFor="ongoing" className="cursor-pointer">Đang diễn ra</Label>
+              <RadioGroupItem value="now" id="now" />
+              <Label htmlFor="now" className="cursor-pointer">Đang diễn ra</Label>
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="upcoming" id="upcoming" />
               <Label htmlFor="upcoming" className="cursor-pointer">Sắp diễn ra</Label>
             </div>
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="past" id="past" />
-              <Label htmlFor="past" className="cursor-pointer">Đã kết thúc</Label>
+              <RadioGroupItem value="completed" id="completed" />
+              <Label htmlFor="completed" className="cursor-pointer">Đã kết thúc</Label>
             </div>
           </RadioGroup>
         </div>
@@ -116,7 +116,7 @@ export default function AuctionFilter({ onFilterChange, currentType }: AuctionFi
         {/* Loại tài sản */}
         <div>
           <Label className="mb-3 block font-semibold">Loại tài sản</Label>
-          <RadioGroup 
+          <RadioGroup
             value={category || "all"} // Nếu rỗng thì chọn 'all'
             onValueChange={(val) => setCategory(val === "all" ? "" : val)}
             className="flex flex-col space-y-2"
@@ -149,7 +149,7 @@ export default function AuctionFilter({ onFilterChange, currentType }: AuctionFi
               <RadioGroupItem value="other_asset" id="other_asset" />
               <Label htmlFor="other_asset" className="cursor-pointer">Tài sản khác</Label>
             </div>
-             {/* Thêm các option khác nếu cần, value phải khớp với logic filter ở cha */}
+            {/* Thêm các option khác nếu cần, value phải khớp với logic filter ở cha */}
           </RadioGroup>
         </div>
 
@@ -160,7 +160,7 @@ export default function AuctionFilter({ onFilterChange, currentType }: AuctionFi
             <SelectTrigger className="w-full bg-white">
               <SelectValue placeholder="Chọn tỉnh/thành phố" />
             </SelectTrigger>
-            <SelectContent> 
+            <SelectContent>
               <SelectItem value="all">Tất cả</SelectItem>
               <SelectItem value="Hồ Chí Minh">Hồ Chí Minh</SelectItem>
               <SelectItem value="Hà Nội">Hà Nội</SelectItem>
@@ -172,14 +172,14 @@ export default function AuctionFilter({ onFilterChange, currentType }: AuctionFi
 
       {/* Nút hành động */}
       <div className="flex gap-4 mt-8 pt-4 border-t border-gray-100">
-        <Button 
-          className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold px-8" 
+        <Button
+          className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold px-8"
           onClick={handleSearch}
         >
           Tìm kiếm
         </Button>
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           onClick={handleReset}
           className="px-8 border-gray-300"
         >

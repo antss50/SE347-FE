@@ -13,139 +13,97 @@ import { Home } from "lucide-react";
 import AuctionFilter from "../../components/AuctionFilter";
 import axios from "axios";
 
-// Định nghĩa lại type cho bộ lọc
-type FilterState = {
-  type: "ongoing" | "upcoming" | "past";
-  priceRange: number[];
-  location: string;
-  category: string;
-};
+const PAGE_SIZE = 12;
 
 function AuctionsContent() {
   const router = useRouter();
-  const searchParams = useSearchParams(); 
+  const searchParams = useSearchParams();
 
-  // Get type from URL query, default to "ongoing"
-  const initialType = (searchParams.get("type") as "ongoing" | "upcoming" | "past") || "ongoing";
+  const statusParam = searchParams.get("type") as "now" | "upcoming" | "completed" | null;
 
-  const [filters, setFilters] = useState<FilterState>({
-    type: initialType,
-    priceRange: [0, 10000000000],
-    location: "",
-    category: "",
-  });
+  const pageParam = Number(searchParams.get("page") || 1);
+
+  const [page, setPage] = useState(pageParam);
+  const [totalPages, setTotalPages] = useState(1);
 
   const [auctions, setAuctions] = useState<AuctionItem[]>([]);
 
-  // Helper function to get random image (in process...)
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 9999999999999]);
+
   const getRandomImage = (id: string) => {
-    const images = ["/images/auction-logo.jpg", "/images/auction-logo.jpg", "/images/auction-logo.jpg"];
+    const images = ["/images/auction-logo.jpg", "/images/auction-logo.jpg"];
     return images[id.charCodeAt(id.length - 1) % images.length];
   };
 
-  const getAuctionType = (category : string) => {
-    if (!category || category === "all") 
-      return undefined;
-    const map: Record<string, string> = {
-      "secured_asset": "secured_asset",
-      "land_use_rights": "land_use_rights",
-      "administrative_violation_asset": "administrative_violation_asset",
-      "state_asset": "state_asset",
-      "enforcement_asset": "enforcement_asset",
-      "other_asset": "other_asset",
-    };
-    return map[category] || category;
-  }
+  const mapAuction = (item: ApiAuctionItem): AuctionItem => ({
+    id: item.id,
+    name: item.name,
+    startingPrice: Number(item.startingPrice),
+    deposit: Number(item.depositAmountRequired),
+    time: new Date(item.auctionStartAt).toLocaleString("vi-VN", {
+      hour12: false,
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
+    image: getRandomImage(item.id),
+    location: "TP Hồ Chí Minh",
+    status: statusParam!,
+  });
+
+  const fetchAuctions = async () => {
+    try {
+      const params: any = {
+        page,
+        limit: PAGE_SIZE,
+        sortBy: "createdAt",
+        sortOrder: "desc",
+      };
+
+      if (statusParam) params.status = statusParam;
+
+      const res = await axios.get("/api/auctions", { params });
+
+      if (res.data?.success) {
+        const raw: ApiAuctionItem[] = res.data.data || [];
+
+        setAuctions(raw.map(mapAuction));
+        setTotalPages(res.data.meta?.totalPages || 1);
+      }
+    } catch (err) {
+      console.error("Fetch auctions error:", err);
+    }
+  };
 
   useEffect(() => {
-    const fetchAuctions = async () => {
-      try {
-        let statusParam = 'now'; // Mặc định
-        if (filters.type === 'upcoming') statusParam = 'upcoming';
-        if (filters.type === 'past') statusParam = 'completed';
-
-        const params = {
-          page: 1,
-          limit: 10,
-          status: statusParam, 
-          auctionType: getAuctionType(filters.category),
-          sortBy: 'createdAt', 
-          sortOrder: 'desc',
-        };
-        const resFirstPage = await axios.get('/api/auctions', { params });
-        
-        if (resFirstPage.data && resFirstPage.data.success) {
-          const { totalPages } = resFirstPage.data.meta;
-          let allRawData: ApiAuctionItem[] = resFirstPage.data.data || [];
-
-          if (totalPages > 1) {
-            for (let page = 2; page <= totalPages; page++) {
-              try {
-                const resNext = await axios.get('api/auctions', { 
-                  params: { ...params, page } 
-                });
-                
-                if (resNext.data?.success) {
-                  allRawData = [...allRawData, ...resNext.data.data];
-                }
-              } catch (e) {
-                console.warn(`Lỗi khi tải trang ${page}`, e);
-              }
-            }
-          }
-
-          const processedData: AuctionItem[] = allRawData.map((item) => {
-            return {
-              id: item.id,
-              name: item.name,
-              startingPrice: Number(item.startingPrice), 
-              deposit: Number(item.depositAmountRequired),
-              time: new Date(item.auctionStartAt).toLocaleTimeString("vi-VN", { 
-                hour12: false,
-                day: '2-digit', 
-                month: '2-digit', 
-                year: 'numeric', 
-                hour: '2-digit', 
-                minute: '2-digit'
-              }),              
-              image: getRandomImage(item.id),
-              location: "TP. Hồ Chí Minh", 
-              category: "Tài sản", 
-              status: filters.type as any
-            };
-          });
-
-          let finalResult = processedData;
-          // Lọc giá
-          finalResult = finalResult.filter((item) => 
-            item.startingPrice >= filters.priceRange[0] && 
-            item.startingPrice <= filters.priceRange[1]
-          );
-
-          // Lọc địa điểm (nếu có)
-
-          setAuctions(finalResult);
-        } else {
-          setAuctions([]);
-        }
-      } catch (err) {
-        console.error("Failed to fetch auctions from API", err);
-      }
-    };
-
     fetchAuctions();
-  }, [filters]); 
+  }, [statusParam, page]);
 
-  // Hàm xử lý khi thay đổi bộ lọc
+  const filteredAuctions = auctions.filter(
+    (a) => a.startingPrice >= priceRange[0] && a.startingPrice <= priceRange[1]
+  );
+
   const handleFilterChange = (newFilters: any) => {
-    setFilters((prev) => ({
-      ...prev,
-      ...newFilters
-    }));
-    
-    if (newFilters.type && newFilters.type !== filters.type) {
-      router.push(`/auctions?type=${newFilters.type}`);
+    if (newFilters.type) {
+      router.push(`/auctions?type=${newFilters.type}&page=1`);
+      setPage(1);
     }
+
+    if (newFilters.priceRange) {
+      setPriceRange(newFilters.priceRange);
+    }
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+
+    const query = statusParam
+      ? `?type=${statusParam}&page=${newPage}`
+      : `?page=${newPage}`;
+
+    router.push("/auctions" + query);
   };
 
   return (
@@ -162,36 +120,63 @@ function AuctionsContent() {
         <span className="text-gray-400">{">"}</span>
         <span className="font-semibold">Tài sản đấu giá</span>
       </div>
-  
-      {/* Bộ lọc tài sản */}
-      {/* Đảm bảo AuctionFilter nhận props đúng type */}
-      <AuctionFilter 
-        onFilterChange={handleFilterChange} 
-        currentType={filters.type} 
+
+      {/* FILTER */}
+      <AuctionFilter
+        onFilterChange={handleFilterChange}
+        currentType={statusParam!}
       />
 
       <div className="max-w-7xl mx-auto px-6 py-8">
-        <h3 className="text-3xl font-semibold mb-8"> 
-          Đấu giá {filters.type === "ongoing" ? "đang diễn ra" 
-          : filters.type === "upcoming" ? "sắp diễn ra" 
-          : "đã kết thúc"}
+        <h3 className="text-3xl font-semibold mb-8">
+          {statusParam === "now"
+            ? "Đang diễn ra"
+            : statusParam === "upcoming"
+              ? "Sắp diễn ra"
+              : statusParam === "completed"
+                ? "Đã kết thúc"
+                : "Tất cả tài sản đấu giá"}
         </h3>
-        
-        {auctions.length > 0 ? (
-          <SectionGrid items={auctions} />
+
+        {filteredAuctions.length > 0 ? (
+          <>
+            <SectionGrid items={filteredAuctions} />
+
+            {/* Pagination */}
+            <div className="flex justify-center gap-4 mt-10">
+              <button
+                disabled={page <= 1}
+                onClick={() => handlePageChange(page - 1)}
+                className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100"
+              >
+                Trang trước
+              </button>
+
+              <span className="px-4 py-2">
+                {page} / {totalPages}
+              </span>
+
+              <button
+                disabled={page >= totalPages}
+                onClick={() => handlePageChange(page + 1)}
+                className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100"
+              >
+                Trang sau
+              </button>
+            </div>
+          </>
         ) : (
           <div className="text-center py-20 text-gray-500">
             <p className="text-xl">Không tìm thấy tài sản nào phù hợp.</p>
           </div>
         )}
       </div>
-      
+
       <Footer />
     </main>
   );
 }
 
-// Next.js yêu cầu bọc component dùng useSearchParams trong Suspense
 export default function AuctionsPage() {
   return (
     <Suspense fallback={<div>Loading...</div>}>

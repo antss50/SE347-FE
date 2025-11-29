@@ -12,100 +12,84 @@ import { AuctionItem, ApiAuctionItem, AuctionResponse } from "../types/auction";
 import apiClient from "axios";
 
 export default function HomePage() {
-  const [time, setTime] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState(true);
+  const [time, setTime] = useState("");
   const [auctions, setAuctions] = useState<AuctionResponse>({
     ongoing: [],
     upcoming: [],
     past: [],
   });
-  
-  // Get image (in process...)
+
   const getRandomImage = (id: string) => {
-  const images = [
-    "/images/auction-logo.jpg", 
-    "/images/auction-logo.jpg",
-    "/images/auction-logo.jpg"
-  ];
-  return images[id.charCodeAt(id.length - 1) % images.length] || "/images/auction-logo.jpg";
-};
+    const images = ["/images/auction-logo.jpg", "/images/auction-logo.jpg"];
+    return images[id.charCodeAt(id.length - 1) % images.length];
+  };
+
+  const mapAuction = (item: ApiAuctionItem): AuctionItem => {
+    const start = new Date(item.auctionStartAt);
+
+    return {
+      id: item.id,
+      name: item.name,
+      startingPrice: Number(item.startingPrice),
+      deposit: Number(item.depositAmountRequired),
+      time: start.toLocaleString("vi-VN", {
+        hour12: false,
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+      image: getRandomImage(item.id),
+      location: "TP Hồ Chí Minh"
+    };
+  };
+
+  const fetchByStatus = async (status: "now" | "upcoming" | "completed") => {
+    const res = await apiClient.get("/api/auctions", {
+      params: { status, limit: 8, page: 1 },
+    });
+
+    return (res.data.data || []).map(mapAuction);
+  };
 
   useEffect(() => {
-    const fetchAuctions = async () => {
+    const load = async () => {
+      setLoading(true);
+
       try {
-        setLoading(true);
-        const res = await apiClient.get('/api/auctions'); 
+        const [ongoing, upcoming, past] = await Promise.all([
+          fetchByStatus("now"),
+          fetchByStatus("upcoming"),
+          fetchByStatus("completed"),
+        ]);
 
-        console.log("API Response:", res.data);
-
-        if (res.data && res.data.success) {
-          const rawData: ApiAuctionItem[] = res.data.data || [];
-
-          console.log("Fetched auction data:", rawData);
-
-          const now = new Date();
-
-          const processedData: AuctionItem[] = rawData.map((item) => {
-            const startDate = new Date(item.auctionStartAt);
-            
-            let status: "UPCOMING" | "ONGOING" | "PAST" = "PAST";
-            const oneDay = 24 * 60 * 60 * 1000;
-            
-            if (startDate > now) {
-              status = "UPCOMING";
-            } else if (now.getTime() - startDate.getTime() < oneDay) {
-              status = "ONGOING";
-            }
-
-            return {
-              id: item.id,
-              name: item.name,
-              startingPrice: Number(item.startingPrice),
-              deposit: Number(item.depositAmountRequired),
-              time: new Date(item.auctionStartAt).toLocaleTimeString("vi-VN", { 
-                hour12: false,
-                day: '2-digit', 
-                month: '2-digit', 
-                year: 'numeric', 
-                hour: '2-digit', 
-                minute: '2-digit'
-              }),
-              image: getRandomImage(item.id),
-              location: "TP Hồ Chí Minh", 
-              status: status
-            };
-          });
-
-          console.log("Processed auction data:", processedData);
-
-          setAuctions({
-            ongoing: processedData.filter((i) => i.status === "ONGOING"),
-            upcoming: processedData.filter((i) => i.status === "UPCOMING"),
-            past: processedData.filter((i) => i.status === "PAST"),
-          });
-        }
+        setAuctions({ ongoing, upcoming, past });
       } catch (err) {
-        console.error("Failed to fetch auctions from API", err);
-      } finally {
-        setLoading(false);
+        console.error("Error fetching auctions:", err);
       }
+
+      setLoading(false);
     };
 
-    fetchAuctions();
+    load();
   }, []);
 
-  // Update clock every second
+  // Real-time clock
   useEffect(() => {
     const updateClock = () => {
       const now = new Date();
-      const formattedTime = now.toLocaleTimeString("vi-VN", { hour12: false });
-      const formattedDate = now.toLocaleDateString("vi-VN");
-      setTime(`${formattedTime} | ${formattedDate}`);
+      setTime(
+        now.toLocaleTimeString("vi-VN", { hour12: false }) +
+        " | " +
+        now.toLocaleDateString("vi-VN")
+      );
     };
 
     updateClock();
-    const interval = setInterval(updateClock, 1000);
-    return () => clearInterval(interval);
+    const timer = setInterval(updateClock, 1000);
+    return () => clearInterval(timer);
   }, []);
 
   if (loading) {
@@ -158,43 +142,48 @@ export default function HomePage() {
       </section>
 
       {/* Auction Sections */}
-      <div className="max-w-7xl mx-auto px-6">
-        {/* Đang diễn ra */}
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl pt-8 font-bold">⚖️ Đấu giá đang diễn ra</h2>
-          <a href="/auctions?type=ongoing" className="mt-8 text-lg">
-            <i>
-              <u>Xem tất cả</u>
-            </i>
-          </a>
-        </div>
-        <SectionGrid items={auctions.ongoing} />
+      <div className="max-w-7xl mx-auto px-6 pb-16">
+        {auctions.ongoing.length > 0 && (
+          <SectionBlock
+            title="⚖️ Đấu giá đang diễn ra"
+            type="now"
+            items={auctions.ongoing}
+          />
+        )}
 
-        {/* Sắp diễn ra */}
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl pt-8 font-bold">⚖️ Đấu giá sắp diễn ra</h2>
-          <a href="/auctions?type=upcoming" className="mt-8 text-lg">
-            <i>
-              <u>Xem tất cả</u>
-            </i>
-          </a>
-        </div>
-        <SectionGrid items={auctions.upcoming} />
+        {auctions.upcoming.length > 0 && (
+          <SectionBlock
+            title="⚖️ Đấu giá sắp diễn ra"
+            type="upcoming"
+            items={auctions.upcoming}
+          />
+        )}
 
-        {/* Đã diễn ra */}
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl pt-8 font-bold">⚖️ Đấu giá đã diễn ra</h2>
-          <a href="/auctions?type=past" className="mt-8 text-lg">
-            <i>
-              <u>Xem tất cả</u>
-            </i>
-          </a>
-        </div>
-        <SectionGrid items={auctions.past} />
+        {auctions.past.length > 0 && (
+          <SectionBlock
+            title="⚖️ Đấu giá đã diễn ra"
+            type="completed"
+            items={auctions.past}
+          />
+        )}
       </div>
 
-      {/* Footer */}
       <Footer />
     </main>
   );
 }
+
+const SectionBlock = ({ title, type, items }: any) => (
+  <>
+    <div className="flex items-center justify-between mt-10">
+      <h2 className="text-2xl font-bold">{title}</h2>
+      <a href={`/auctions?type=${type}`} className="text-lg">
+        <i>
+          <u>Xem tất cả</u>
+        </i>
+      </a>
+    </div>
+
+    <SectionGrid items={items} />
+  </>
+);
