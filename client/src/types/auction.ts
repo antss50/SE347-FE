@@ -6,6 +6,7 @@ export interface ApiAuctionItem {
   startingPrice: string;       
   depositAmountRequired: string; 
   auctionStartAt: string;
+  images: any;
 }
 
 export interface AuctionItem {
