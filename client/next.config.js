@@ -13,12 +13,12 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'storage.daugiavietnam.com', // Domain ảnh đấu giá
       },
-      {
-        protocol: 'http',
-        hostname: 'localhost', // Domain ảnh bài viết (backend local)
-        port: '3000',
-        pathname: '/assets/**',
-      },
+      // {
+      //   protocol: 'http',
+      //   hostname: 'localhost', // Domain ảnh bài viết (backend local)
+      //   port: '3000',
+      //   pathname: '/assets/**',
+      // },
     ],
   },
   async rewrites() {

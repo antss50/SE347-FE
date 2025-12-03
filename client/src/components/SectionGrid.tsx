@@ -64,12 +64,13 @@ const SectionGrid = ({ items }: SectionGridProps) => {
               ) : (
                 <>
                       <div className="flex items-center gap-2 text-gray-500 text-xs mb-2">
-                         <span className="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded">
-                            <User className="w-3 h-3" /> {(item as ApiArticleItem).author}
-                         </span>
-                         <span className="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded">
-                            <Calendar className="w-3 h-3" /> 
-                            {new Date((item as ApiArticleItem).createdAt).toLocaleDateString('vi-VN')}
+                         <span className="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded max-w-[50%] truncate" title={(item as ApiArticleItem).author}>
+                            <User className="w-3 h-3 flex-shrink-0" /> 
+                            <span className="truncate">{(item as ApiArticleItem).author}</span>
+                          </span>
+                         <span className="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded max-w-[50%] truncate" title={new Date((item as ApiArticleItem).createdAt).toLocaleDateString('vi-VN')}>
+                            <Calendar className="w-3 h-3 flex-shrink-0" /> 
+                            <span className="truncate">{new Date((item as ApiArticleItem).createdAt).toLocaleDateString('vi-VN')}</span>  
                          </span>
                       </div>
                       

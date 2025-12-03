@@ -11,7 +11,6 @@ import Footer from "../components/Footer";
 import { AuctionItem, ApiAuctionItem, AuctionResponse } from "../types/auction";
 import apiClient from "axios";
 import { ApiArticleItem } from "../types/article";
-import { set } from "zod";
 
 export default function HomePage() {
   const [loading, setLoading] = useState(true);
@@ -23,27 +22,17 @@ export default function HomePage() {
   });
   const [articles, setArticles] = useState<ApiArticleItem[]>([]);
 
-  const getRandomImage = (id: string) => {
-    const images = ["/images/auction-logo.jpg", "/images/auction-logo.jpg"];
-    return images[id.charCodeAt(id.length - 1) % images.length];
-  };
-
-  const BACKEND_URL = "http://localhost:3000";
   const getImageUrl = (imgData: any): string => {
   if (!imgData) return "/images/auction-logo.jpg";
-
+  
+  // If imgData is an array (auctions)
   if (Array.isArray(imgData) && imgData.length > 0) {
     return imgData.length > 0 ? imgData[0].url : "/images/auction-logo.jpg";
   }
-
-  // 3. Trường hợp Article (Backend trả về chuỗi đường dẫn tương đối)
-  if (typeof imgData === 'string') {
-    if (imgData.startsWith('http') || imgData.startsWith('https')) 
-      return imgData;
-    const cleanPath = imgData.startsWith('/') ? imgData.substring(1) : imgData;
-      return `${BACKEND_URL}/${cleanPath}`;
+  // If imgData is an object (articles)
+  if (typeof imgData === "object" && imgData.url) {
+    return imgData.url;
   }
-
   return "/images/auction-logo.jpg";
 };
 
@@ -86,7 +75,7 @@ export default function HomePage() {
             sortOrder: 'desc' 
         },
       });
-      
+      console.log("Url of image:", res.data.data.map((item: any) => getImageUrl(item.image)));
       if (res.data.success && res.data.data) {
         return res.data.data.map((article: any) => ({
             ...article,
