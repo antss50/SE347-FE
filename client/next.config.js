@@ -12,6 +12,7 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'storage.daugiavietnam.com', // Domain ảnh đấu giá
+        pathname: '/**',
       },
       // {
       //   protocol: 'http',

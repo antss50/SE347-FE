@@ -11,6 +11,7 @@ import Footer from "../components/Footer";
 import { AuctionItem, ApiAuctionItem, AuctionResponse } from "../types/auction";
 import apiClient from "axios";
 import { ApiArticleItem } from "../types/article";
+import { formatCurrency, getImageUrl } from "./utils/format";
 
 export default function HomePage() {
   const [loading, setLoading] = useState(true);
@@ -21,20 +22,6 @@ export default function HomePage() {
     past: [],
   });
   const [articles, setArticles] = useState<ApiArticleItem[]>([]);
-
-  const getImageUrl = (imgData: any): string => {
-  if (!imgData) return "/images/auction-logo.jpg";
-  
-  // If imgData is an array (auctions)
-  if (Array.isArray(imgData) && imgData.length > 0) {
-    return imgData.length > 0 ? imgData[0].url : "/images/auction-logo.jpg";
-  }
-  // If imgData is an object (articles)
-  if (typeof imgData === "object" && imgData.url) {
-    return imgData.url;
-  }
-  return "/images/auction-logo.jpg";
-};
 
   const mapAuction = (item: ApiAuctionItem): AuctionItem => {
     const start = new Date(item.auctionStartAt);
